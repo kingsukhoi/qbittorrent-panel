@@ -1,0 +1,21 @@
+### POST try login
+POST https://{{hostname}}/api/v2/auth/login
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Referer: https://{{hostname}}
+
+username={{username}}&password={{password}}
+
+### Get categories
+GET https://{{hostname}}/api/v2/torrents/categories
+
+### Get torrents
+GET https://{{hostname}}/api/v2/torrents/info?sort=added_on
+
+### Get torrent contents
+GET https://{{hostname}}/api/v2/torrents/files?hash=920416635395c3eb5887973371ce5388fc95c13e
+
+### Get torrent properties
+GET https://{{hostname}}/api/v2/torrents/properties?hash=920416635395c3eb5887973371ce5388fc95c13e
+
+### Get torrent pieces hash
+GET https://{{hostname}}/api/v2/torrents/pieceHashes?hash=920416635395c3eb5887973371ce5388fc95c13e
