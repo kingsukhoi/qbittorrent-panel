@@ -22,15 +22,11 @@ func main() {
 		}
 
 		for _, torrent := range torrents {
-			resp2, err2 := client.GetTracker(torrent.Hash)
+			resp2, err2 := torrent.GetTracker(torrent.Hash)
 			if err2 != nil {
 				panic(err2)
 			}
 			for _, v2 := range resp2 {
-				//if v2.Msg == "This torrent is private" || v2.Msg == "" {
-				//	continue
-				//}
-
 				if v2.Msg != "Torrent has been deleted." {
 					continue
 				}

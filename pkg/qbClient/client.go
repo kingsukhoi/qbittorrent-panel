@@ -104,7 +104,7 @@ func (c *Client) GetTorrents() ([]*TorrentInfo, error) {
 		return nil, err
 	}
 	for _, v := range rtnMe {
-		v.QbInstance = c.BasePath.String()
+		v.Client = c
 	}
 
 	return rtnMe, nil
@@ -112,11 +112,14 @@ func (c *Client) GetTorrents() ([]*TorrentInfo, error) {
 
 // GetTracker retrieves the list of trackers for a specific torrent using its infohash.
 // Returns a slice of TorrentTracker or an error.
-func (c *Client) GetTracker(infohash string) ([]TorrentTracker, error) {
+func (t *TorrentInfo) GetTracker(infohash string) ([]*TorrentTracker, error) {
 	data := url.Values{}
 	data.Set("hash", infohash)
 
-	req, err := http.NewRequest("GET", fmt.Sprintf(c.BasePath.String()+"/api/v2/torrents/trackers?hash=%s", infohash), nil)
+	currUrl := t.Client.BasePath.JoinPath("/api/v2/torrents/trackers")
+	currUrl.RawQuery = data.Encode()
+
+	req, err := http.NewRequest("GET", currUrl.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -129,10 +132,12 @@ func (c *Client) GetTracker(infohash string) ([]TorrentTracker, error) {
 	body, _ := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 
-	var rtnMe []TorrentTracker
-
+	var rtnMe []*TorrentTracker
 	err = json.Unmarshal(body, &rtnMe)
 
+	for _, v := range rtnMe {
+		v.TorrentInfo = t
+	}
 	return rtnMe, nil
 }
 

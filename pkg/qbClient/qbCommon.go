@@ -6,7 +6,7 @@ import (
 )
 
 type Common struct {
-	QbInstance string `json:"QBInstance,omitempty"`
+	Client *Client
 }
 
 type JSONTime time.Time

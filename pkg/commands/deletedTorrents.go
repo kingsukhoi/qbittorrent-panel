@@ -24,7 +24,7 @@ func (d *DeletedCmd) Run(globals *Globals) error {
 		}
 
 		for _, torrent := range torrents {
-			resp2, err2 := client.GetTracker(torrent.Hash)
+			resp2, err2 := torrent.GetTracker(torrent.Hash)
 			if err2 != nil {
 				panic(err2)
 			}

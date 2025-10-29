@@ -1,6 +1,7 @@
 package qbClient
 
 type TorrentTracker struct {
+	TorrentInfo   *TorrentInfo
 	Msg           string `json:"msg"`
 	NumDownloaded int    `json:"num_downloaded"`
 	NumLeeches    int    `json:"num_leeches"`
