@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -7,11 +7,13 @@ import (
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 )
 
-func main() {
-	configuration.MustGetConfig("./dev.yaml")
+type DeletedCmd struct{}
+
+func (d *DeletedCmd) Run(globals *Globals) error {
+	configuration.MustGetConfig(globals.Config)
 	clients, err := qbClient.GetClients()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	for _, client := range clients {
@@ -40,4 +42,6 @@ func main() {
 			}
 		}
 	}
+
+	return nil
 }

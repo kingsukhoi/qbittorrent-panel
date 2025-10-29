@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/kingsukhoi/qbitorrent-panel/pkg/config"
 	"io"
 	"log/slog"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 	"net/url"
 	"slices"
 	"strings"
+
+	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
 )
 
 var client http.Client
@@ -28,12 +29,12 @@ type Client struct {
 }
 
 func GetClients() ([]*Client, error) {
-	cfg := config.MustGetConfig()
+	cfg := configuration.MustGetConfig()
 
 	clients := make([]*Client, 0)
 
 	for _, v := range cfg.Endpoints {
-		currClient, err := Login(config.QbLogin{
+		currClient, err := Login(configuration.QbLogin{
 			BasePath: fmt.Sprintf("%s", v.BasePath),
 			Username: v.Username,
 			Password: v.Password,
@@ -47,7 +48,7 @@ func GetClients() ([]*Client, error) {
 	return clients, nil
 }
 
-func Login(login config.QbLogin) (*Client, error) {
+func Login(login configuration.QbLogin) (*Client, error) {
 	baseUrl, err := url.Parse(login.BasePath)
 	if err != nil {
 		return nil, err

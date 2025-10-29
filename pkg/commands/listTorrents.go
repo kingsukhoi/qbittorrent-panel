@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -9,13 +9,14 @@ import (
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 )
 
-func main() {
+type ListCmd struct{}
 
-	configuration.MustGetConfig("./dev.yaml")
+func (l *ListCmd) Run(globals *Globals) error {
+	configuration.MustGetConfig(globals.Config)
 
 	clients, err := qbClient.GetClients()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	torrents := make([]*qbClient.TorrentInfo, 0)
@@ -23,7 +24,7 @@ func main() {
 	for _, client := range clients {
 		resp, err2 := client.GetTorrents()
 		if err2 != nil {
-			panic(err2)
+			return err2
 		}
 		torrents = append(torrents, resp...)
 	}
@@ -37,4 +38,5 @@ func main() {
 		fmt.Printf("%s,%s\n", torrent.Name, torrent.QbInstance)
 	}
 
+	return nil
 }
