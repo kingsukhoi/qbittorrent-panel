@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
@@ -8,8 +9,10 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	configuration.MustGetConfig("./dev.yaml")
-	clients, err := qbClient.GetClients()
+	clients, err := qbClient.GetClients(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -22,7 +25,7 @@ func main() {
 		}
 
 		for _, torrent := range torrents {
-			resp2, err2 := torrent.GetTracker(torrent.Hash)
+			resp2, err2 := torrent.GetTracker(ctx, torrent.Hash)
 			if err2 != nil {
 				panic(err2)
 			}

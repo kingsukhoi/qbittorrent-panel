@@ -1,6 +1,7 @@
 package qbClient
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -28,13 +29,13 @@ type Client struct {
 	BasePath *url.URL
 }
 
-func GetClients() ([]*Client, error) {
+func GetClients(ctx context.Context) ([]*Client, error) {
 	cfg := configuration.MustGetConfig()
 
 	clients := make([]*Client, 0)
 
 	for _, v := range cfg.Endpoints {
-		currClient, err := Login(configuration.QbLogin{
+		currClient, err := Login(ctx, configuration.QbLogin{
 			BasePath: fmt.Sprintf("%s", v.BasePath),
 			Username: v.Username,
 			Password: v.Password,
@@ -48,7 +49,7 @@ func GetClients() ([]*Client, error) {
 	return clients, nil
 }
 
-func Login(login configuration.QbLogin) (*Client, error) {
+func Login(ctx context.Context, login configuration.QbLogin) (*Client, error) {
 	baseUrl, err := url.Parse(login.BasePath)
 	if err != nil {
 		return nil, err
@@ -62,7 +63,7 @@ func Login(login configuration.QbLogin) (*Client, error) {
 	data.Set("username", login.Username)
 	data.Set("password", login.Password)
 
-	req, err := http.NewRequest("POST", rtnMe.BasePath.JoinPath("/api/v2/auth/login").String(), strings.NewReader(data.Encode()))
+	req, err := http.NewRequestWithContext(ctx, "POST", rtnMe.BasePath.JoinPath("/api/v2/auth/login").String(), strings.NewReader(data.Encode()))
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +84,8 @@ func Login(login configuration.QbLogin) (*Client, error) {
 	return rtnMe, err
 }
 
-func (c *Client) GetTorrents() ([]*TorrentInfo, error) {
-	req, err := http.NewRequest("GET", c.BasePath.String()+"/api/v2/torrents/info?sort=added_on", nil)
+func (c *Client) GetTorrents(ctx context.Context) ([]*TorrentInfo, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", c.BasePath.String()+"/api/v2/torrents/info?sort=added_on", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -112,14 +113,14 @@ func (c *Client) GetTorrents() ([]*TorrentInfo, error) {
 
 // GetTracker retrieves the list of trackers for a specific torrent using its infohash.
 // Returns a slice of TorrentTracker or an error.
-func (t *TorrentInfo) GetTracker(infohash string) ([]*TorrentTracker, error) {
+func (t *TorrentInfo) GetTracker(ctx context.Context, infohash string) ([]*TorrentTracker, error) {
 	data := url.Values{}
 	data.Set("hash", infohash)
 
 	currUrl := t.Client.BasePath.JoinPath("/api/v2/torrents/trackers")
 	currUrl.RawQuery = data.Encode()
 
-	req, err := http.NewRequest("GET", currUrl.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", currUrl.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -143,8 +144,8 @@ func (t *TorrentInfo) GetTracker(infohash string) ([]*TorrentTracker, error) {
 
 // GetCategories list all the categories in a given client.
 // Returns a map of categories where the key is the name of the category, and the value is Category
-func (c *Client) GetCategories() (map[string]Category, error) {
-	req, err := http.NewRequest("GET", c.BasePath.String()+"/api/v2/torrents/categories", nil)
+func (c *Client) GetCategories(ctx context.Context) (map[string]Category, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", c.BasePath.String()+"/api/v2/torrents/categories", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +173,7 @@ func (c *Client) GetCategories() (map[string]Category, error) {
 // SyncCategories Add the given category to the client.
 // If the category exists on the client, it will be skipped
 // https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-category
-func (c *Client) SyncCategories(category *Category) error {
+func (c *Client) SyncCategories(ctx context.Context, category *Category) error {
 	categoryInClient := slices.ContainsFunc(category.ClientUrls, func(s string) bool {
 		return c.BasePath.String() == s
 	})
@@ -188,7 +189,7 @@ func (c *Client) SyncCategories(category *Category) error {
 
 	slog.Debug("Category", "encoded", data.Encode())
 
-	req, err := http.NewRequest(http.MethodPost, c.BasePath.JoinPath("/api/v2/torrents/createCategory").String(),
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.BasePath.JoinPath("/api/v2/torrents/createCategory").String(),
 		strings.NewReader(data.Encode()))
 	if err != nil {
 		return err
