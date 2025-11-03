@@ -7,7 +7,7 @@ type Globals struct {
 var CLI struct {
 	Globals
 
-	Deleted        DeletedCmd        `cmd:"" help:"List torrents that have been deleted from tracker"`
-	List           ListCmd           `cmd:"" help:"List all torrents sorted by name"`
-	SyncCategories SyncCategoriesCmd `cmd:"" help:"Sync categories across all qBittorrent clients"`
+	Abandoned      ListAbandonedTorrents `cmd:"" help:"List torrents that have been deleted from tracker"`
+	List           ListCmd               `cmd:"" help:"List all torrents sorted by name"`
+	SyncCategories SyncCategoriesCmd     `cmd:"" help:"Sync categories across all qBittorrent clients"`
 }

@@ -8,9 +8,9 @@ import (
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 )
 
-type DeletedCmd struct{}
+type ListAbandonedTorrents struct{}
 
-func (d *DeletedCmd) Run(globals *Globals, ctx context.Context) error {
+func (d *ListAbandonedTorrents) Run(globals *Globals, ctx context.Context) error {
 
 	configuration.MustGetConfig(globals.Config)
 	clients, err := qbClient.GetClients(ctx)
