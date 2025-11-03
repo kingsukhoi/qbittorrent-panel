@@ -1,15 +1,17 @@
 package commands
 
 import (
+	"context"
+
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 )
 
 type SyncCategoriesCmd struct{}
 
-func (s *SyncCategoriesCmd) Run(globals *Globals) error {
+func (s *SyncCategoriesCmd) Run(globals *Globals, ctx context.Context) error {
 	configuration.MustGetConfig(globals.Config)
-	clients, err := qbClient.GetClients()
+	clients, err := qbClient.GetClients(ctx)
 	if err != nil {
 		return err
 	}
@@ -17,7 +19,7 @@ func (s *SyncCategoriesCmd) Run(globals *Globals) error {
 	categories := make(map[string]*qbClient.Category)
 
 	for _, client := range clients {
-		c, err2 := client.GetCategories()
+		c, err2 := client.GetCategories(ctx)
 		if err2 != nil {
 			return err2
 		}
@@ -38,7 +40,7 @@ func (s *SyncCategoriesCmd) Run(globals *Globals) error {
 
 	for _, client := range clients {
 		for _, v := range categories {
-			err2 := client.SyncCategories(v)
+			err2 := client.SyncCategories(ctx, v)
 			if err2 != nil {
 				return err2
 			}

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"slices"
 	"strings"
@@ -11,10 +12,10 @@ import (
 
 type ListCmd struct{}
 
-func (l *ListCmd) Run(globals *Globals) error {
+func (l *ListCmd) Run(globals *Globals, ctx context.Context) error {
 	configuration.MustGetConfig(globals.Config)
 
-	clients, err := qbClient.GetClients()
+	clients, err := qbClient.GetClients(ctx)
 	if err != nil {
 		return err
 	}
@@ -22,7 +23,7 @@ func (l *ListCmd) Run(globals *Globals) error {
 	torrents := make([]*qbClient.TorrentInfo, 0)
 
 	for _, client := range clients {
-		resp, err2 := client.GetTorrents()
+		resp, err2 := client.GetTorrents(ctx)
 		if err2 != nil {
 			return err2
 		}
@@ -35,7 +36,7 @@ func (l *ListCmd) Run(globals *Globals) error {
 
 	fmt.Println("Name,Url")
 	for _, torrent := range torrents {
-		fmt.Printf("%s,%s\n", torrent.Name, torrent.QbInstance)
+		fmt.Printf("%s,%s\n", torrent.Name, torrent.Client.BasePath)
 	}
 
 	return nil

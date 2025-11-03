@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
@@ -9,22 +10,23 @@ import (
 
 type DeletedCmd struct{}
 
-func (d *DeletedCmd) Run(globals *Globals) error {
+func (d *DeletedCmd) Run(globals *Globals, ctx context.Context) error {
+
 	configuration.MustGetConfig(globals.Config)
-	clients, err := qbClient.GetClients()
+	clients, err := qbClient.GetClients(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, client := range clients {
-		torrents, errL := client.GetTorrents()
+		torrents, errL := client.GetTorrents(ctx)
 
 		if errL != nil {
 			panic(err)
 		}
 
 		for _, torrent := range torrents {
-			resp2, err2 := torrent.GetTracker(torrent.Hash)
+			resp2, err2 := torrent.GetTracker(ctx, torrent.Hash)
 			if err2 != nil {
 				panic(err2)
 			}
