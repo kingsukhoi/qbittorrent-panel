@@ -2,11 +2,9 @@ package commands
 
 import (
 	"context"
-	"fmt"
-	"slices"
-	"strings"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
+	"github.com/kingsukhoi/qbitorrent-panel/pkg/handleOutputs"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 )
 
@@ -30,14 +28,7 @@ func (l *ListCmd) Run(globals *Globals, ctx context.Context) error {
 		torrents = append(torrents, resp...)
 	}
 
-	slices.SortFunc(torrents, func(a *qbClient.TorrentInfo, b *qbClient.TorrentInfo) int {
-		return strings.Compare(a.Name, b.Name)
-	})
-
-	fmt.Println("Name,Url")
-	for _, torrent := range torrents {
-		fmt.Printf("%s,%s\n", torrent.Name, torrent.Client.BasePath)
-	}
+	handleOutputs.PrintTorrentInfo(globals.Output, torrents)
 
 	return nil
 }

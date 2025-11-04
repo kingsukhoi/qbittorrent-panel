@@ -29,6 +29,14 @@ type Client struct {
 	BasePath *url.URL
 }
 
+// MarshalJSON customizes the JSON output to show only the base path string
+func (c *Client) MarshalJSON() ([]byte, error) {
+	if c.BasePath == nil {
+		return json.Marshal(nil)
+	}
+	return json.Marshal(c.BasePath.String())
+}
+
 func GetClients(ctx context.Context) ([]*Client, error) {
 	cfg := configuration.MustGetConfig()
 

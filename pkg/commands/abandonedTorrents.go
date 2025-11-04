@@ -2,15 +2,17 @@ package commands
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
+	"github.com/kingsukhoi/qbitorrent-panel/pkg/handleOutputs"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 )
 
 type ListAbandonedTorrents struct{}
 
 func (d *ListAbandonedTorrents) Run(globals *Globals, ctx context.Context) error {
+
+	deletedTorrents := make([]*qbClient.TorrentInfo, 0)
 
 	configuration.MustGetConfig(globals.Config)
 	clients, err := qbClient.GetClients(ctx)
@@ -22,28 +24,26 @@ func (d *ListAbandonedTorrents) Run(globals *Globals, ctx context.Context) error
 		torrents, errL := client.GetTorrents(ctx)
 
 		if errL != nil {
-			panic(err)
+			return errL
 		}
 
 		for _, torrent := range torrents {
 			resp2, err2 := torrent.GetTracker(ctx, torrent.Hash)
 			if err2 != nil {
-				panic(err2)
+				return err2
 			}
 			for _, v2 := range resp2 {
-				//if v2.Msg == "This torrent is private" || v2.Msg == "" {
-				//	continue
-				//}
-
 				if v2.Msg != "Torrent has been deleted." {
 					continue
 				}
 
-				fmt.Printf("%s - %s - %s - %s\n", torrent.Name, v2.Url, v2.Msg, client.BasePath.String())
+				deletedTorrents = append(deletedTorrents, torrent)
 
 			}
 		}
 	}
+
+	handleOutputs.PrintTorrentInfo(globals.Output, deletedTorrents)
 
 	return nil
 }
