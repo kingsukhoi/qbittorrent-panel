@@ -15,10 +15,7 @@ func (d *ListAbandonedTorrents) Run(globals *Globals, ctx context.Context) error
 	deletedTorrents := make([]*qbClient.TorrentInfo, 0)
 
 	configuration.MustGetConfig(globals.Config)
-	clients, err := qbClient.GetClients(ctx)
-	if err != nil {
-		return err
-	}
+	clients := qbClient.Registry().All()
 
 	for _, client := range clients {
 		torrents, errL := client.GetTorrents(ctx)

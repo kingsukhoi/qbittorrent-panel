@@ -13,10 +13,7 @@ type ListCmd struct{}
 func (l *ListCmd) Run(globals *Globals, ctx context.Context) error {
 	configuration.MustGetConfig(globals.Config)
 
-	clients, err := qbClient.GetClients(ctx)
-	if err != nil {
-		return err
-	}
+	clients := qbClient.Registry().All()
 
 	torrents := make([]*qbClient.TorrentInfo, 0)
 

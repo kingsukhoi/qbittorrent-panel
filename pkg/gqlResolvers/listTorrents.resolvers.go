@@ -7,28 +7,46 @@ package gqlResolvers
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/gqlGenerated"
+	"github.com/kingsukhoi/qbitorrent-panel/pkg/helpers"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 )
 
 // Torrents is the resolver for the Torrents field.
-func (r *queryResolver) Torrents(ctx context.Context) ([]*gqlGenerated.Torrent, error) {
-	clients, err := qbClient.GetClients(ctx)
-	if err != nil {
-		return nil, err
+func (r *queryResolver) Torrents(ctx context.Context, categories []string, servers []string) ([]*gqlGenerated.Torrent, error) {
+	var qbClients []*qbClient.Client
+
+	if len(servers) == 0 {
+		qbClients = qbClient.Registry().All()
+	} else {
+		for _, client := range servers {
+			curr, exist := qbClient.Registry().Get(client)
+			if !exist {
+				return nil, fmt.Errorf("client %s does not exist", client)
+			}
+			qbClients = append(qbClients, curr)
+		}
 	}
+
 	rtnMe := make([]*gqlGenerated.Torrent, 0)
 
-	for _, client := range clients {
+	for _, client := range qbClients {
 		torrents, errL := client.GetTorrents(ctx)
 		if errL != nil {
-			return nil, err
+			return nil, errL
 		}
 
 		for _, torrent := range torrents {
+			match := slices.Contains(categories, torrent.Category)
+			if !match && len(categories) > 0 {
+				continue
+			}
+
 			curr := &gqlGenerated.Torrent{
-				Client:     torrent.Client.BasePath.String(),
+				Server:     torrent.Client.BasePath.String(),
 				Name:       torrent.Name,
 				Category:   torrent.Category,
 				Ratio:      torrent.Ratio,
@@ -43,24 +61,47 @@ func (r *queryResolver) Torrents(ctx context.Context) ([]*gqlGenerated.Torrent, 
 		}
 	}
 
+	slices.SortFunc(rtnMe, func(a, b *gqlGenerated.Torrent) int {
+		return strings.Compare(a.Server, b.Server)
+	})
+
 	return rtnMe, nil
 }
 
-// Files is the resolver for the Files field.
-func (r *torrentResolver) Files(ctx context.Context, obj *gqlGenerated.Torrent) ([]*gqlGenerated.File, error) {
-	clients, err := qbClient.GetClients(ctx)
+// Categories is the resolver for the Categories field.
+func (r *queryResolver) Categories(ctx context.Context) ([]*gqlGenerated.Category, error) {
+	categories, err := helpers.GetAllCategories(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var client *qbClient.Client
-	for _, clientL := range clients {
-		if clientL.BasePath.String() != obj.Client {
-			continue
-		}
-		client = clientL
+	rtnMe := make([]*gqlGenerated.Category, 0)
+
+	for _, category := range categories {
+		rtnMe = append(rtnMe, &gqlGenerated.Category{
+			Name:    category.Name,
+			Path:    category.SavePath,
+			Servers: category.Servers,
+		})
 	}
-	if client == nil {
+
+	slices.SortFunc(rtnMe, func(a, b *gqlGenerated.Category) int {
+		return strings.Compare(a.Name, b.Name)
+	})
+
+	return rtnMe, nil
+}
+
+// Torrent is the resolver for the Torrent field.
+func (r *queryResolver) Torrent(ctx context.Context, infoHashV1 string) ([]*gqlGenerated.Torrent, error) {
+	panic(fmt.Errorf("not implemented: Torrent - Torrent"))
+}
+
+// Files is the resolver for the Files field.
+func (r *torrentResolver) Files(ctx context.Context, obj *gqlGenerated.Torrent) ([]*gqlGenerated.File, error) {
+	client, exist := qbClient.Registry().Get(obj.Server)
+
+	if !exist {
 		return nil, fmt.Errorf("client not found")
 	}
 

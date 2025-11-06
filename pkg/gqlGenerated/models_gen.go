@@ -2,6 +2,12 @@
 
 package gqlGenerated
 
+type Category struct {
+	Name    string   `json:"Name"`
+	Path    string   `json:"Path"`
+	Servers []string `json:"Servers"`
+}
+
 type File struct {
 	Availability float64 `json:"Availability"`
 	Index        int     `json:"Index"`
@@ -17,7 +23,7 @@ type Query struct {
 }
 
 type Torrent struct {
-	Client     string  `json:"Client"`
+	Server     string  `json:"Server"`
 	Name       string  `json:"Name"`
 	Category   string  `json:"Category"`
 	Ratio      float64 `json:"Ratio"`

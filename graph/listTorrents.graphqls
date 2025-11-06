@@ -1,5 +1,11 @@
 scalar Int64
 
+type Category {
+    Name: String!
+    Path: String!
+    Servers: [String!]!
+}
+
 type File {
     Availability: Float!
     Index: Int!
@@ -12,7 +18,7 @@ type File {
 }
 
 type Torrent {
-    Client: String!
+    Server: String!
     Name: String!
     Category: String!
     Ratio: Float!
@@ -26,5 +32,7 @@ type Torrent {
 }
 
 type Query {
-    Torrents: [Torrent!]!
+    Torrents(categories:[String!], servers:[String!]): [Torrent!]!
+    Categories: [Category!]!
+    Torrent(infoHashV1:String!): [Torrent]!
 }

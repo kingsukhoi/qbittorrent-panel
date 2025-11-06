@@ -10,12 +10,15 @@ import (
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/gqlGenerated"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/gqlResolvers"
+	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
 	cfg := configuration.MustGetConfig("./dev.yaml")
+	// init the clients before graphql
+	qbClient.Registry()
 
 	// Create Echo instance
 	e := echo.New()

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -16,11 +15,11 @@ import (
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
 )
 
-var client http.Client
+var httpClient http.Client
 
 func init() {
 	jar, _ := cookiejar.New(nil)
-	client = http.Client{
+	httpClient = http.Client{
 		Jar: jar,
 	}
 }
@@ -35,27 +34,6 @@ func (c *Client) MarshalJSON() ([]byte, error) {
 		return json.Marshal(nil)
 	}
 	return json.Marshal(c.BasePath.String())
-}
-
-func GetClients(ctx context.Context) ([]*Client, error) {
-
-	cfg := configuration.MustGetConfig()
-
-	clients := make([]*Client, 0)
-
-	for _, v := range cfg.Endpoints {
-		currClient, err := Login(ctx, configuration.QbLogin{
-			BasePath: fmt.Sprintf("%s", v.BasePath),
-			Username: v.Username,
-			Password: v.Password,
-		})
-		if err != nil {
-			return nil, err
-		}
-		clients = append(clients, currClient)
-	}
-
-	return clients, nil
 }
 
 func Login(ctx context.Context, login configuration.QbLogin) (*Client, error) {
@@ -80,7 +58,7 @@ func Login(ctx context.Context, login configuration.QbLogin) (*Client, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	//req.Header.Set("Referer", rtnMe.BasePath.String()+"/")
 
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +77,7 @@ func (c *Client) GetTorrents(ctx context.Context) ([]*TorrentInfo, error) {
 		return nil, err
 	}
 
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +112,7 @@ func (t *TorrentInfo) GetTracker(ctx context.Context, infohash string) ([]*Torre
 		return nil, err
 	}
 
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -151,14 +129,14 @@ func (t *TorrentInfo) GetTracker(ctx context.Context, infohash string) ([]*Torre
 	return rtnMe, nil
 }
 
-// GetCategories list all the categories in a given client.
+// GetCategories list all the categories in a given httpClient.
 // Returns a map of categories where the key is the name of the category, and the value is Category
 func (c *Client) GetCategories(ctx context.Context) (map[string]Category, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", c.BasePath.String()+"/api/v2/torrents/categories", nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -179,11 +157,11 @@ func (c *Client) GetCategories(ctx context.Context) (map[string]Category, error)
 
 }
 
-// SyncCategories Add the given category to the client.
-// If the category exists on the client, it will be skipped
+// SyncCategories Add the given category to the httpClient.
+// If the category exists on the httpClient, it will be skipped
 // https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-category
 func (c *Client) SyncCategories(ctx context.Context, category *Category) error {
-	categoryInClient := slices.ContainsFunc(category.ClientUrls, func(s string) bool {
+	categoryInClient := slices.ContainsFunc(category.Servers, func(s string) bool {
 		return c.BasePath.String() == s
 	})
 	if categoryInClient {
@@ -206,7 +184,7 @@ func (c *Client) SyncCategories(ctx context.Context, category *Category) error {
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
 
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -236,7 +214,7 @@ func (c *Client) GetFilesInTorrent(ctx context.Context, InfoHashV1 string) ([]To
 		return nil, err
 	}
 
-	resp, err := client.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
