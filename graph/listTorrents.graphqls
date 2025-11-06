@@ -1,0 +1,16 @@
+type Torrents {
+    Client: String!
+    Name: String!
+    Category: String!
+    Ratio: Float!
+    InfoHashV1: String!
+    Comment: String!
+    RootPath: String!
+    SavePath: String!
+    SizeBytes: Int!
+    Tracker: String!
+}
+
+type Query {
+    Torrents: [Torrents!]!
+}

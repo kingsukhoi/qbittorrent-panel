@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Port      string    `yaml:"port" env-default:":8080"`
 	Endpoints []QbLogin `json:"endpoints" yaml:"endpoints"`
 }
 type QbLogin struct {
