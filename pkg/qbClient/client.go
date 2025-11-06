@@ -38,6 +38,7 @@ func (c *Client) MarshalJSON() ([]byte, error) {
 }
 
 func GetClients(ctx context.Context) ([]*Client, error) {
+
 	cfg := configuration.MustGetConfig()
 
 	clients := make([]*Client, 0)
@@ -221,4 +222,32 @@ func (c *Client) SyncCategories(ctx context.Context, category *Category) error {
 	}
 
 	return nil
+}
+
+func (c *Client) GetFilesInTorrent(ctx context.Context, InfoHashV1 string) ([]TorrentFile, error) {
+	data := url.Values{}
+	data.Set("hash", InfoHashV1)
+
+	path := c.BasePath.JoinPath("/api/v2/torrents/files")
+	path.RawQuery = data.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, path.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	var qbFiles []TorrentFile
+	err = json.Unmarshal(body, &qbFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	return qbFiles, nil
 }

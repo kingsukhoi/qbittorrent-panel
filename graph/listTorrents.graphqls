@@ -1,4 +1,17 @@
-type Torrents {
+scalar Int64
+
+type File {
+    Availability: Float!
+    Index: Int!
+    IsSeed: Boolean!
+    Name: String!
+    PieceRange: [Int!]!
+    Priority: Int!
+    Progress: Float!
+    SizeBytes: Int64!
+}
+
+type Torrent {
     Client: String!
     Name: String!
     Category: String!
@@ -7,10 +20,11 @@ type Torrents {
     Comment: String!
     RootPath: String!
     SavePath: String!
-    SizeBytes: Int!
+    SizeBytes: Int64!
     Tracker: String!
+    Files: [File!]!
 }
 
 type Query {
-    Torrents: [Torrents!]!
+    Torrents: [Torrent!]!
 }

@@ -6,18 +6,19 @@ package gqlResolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/gqlGenerated"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 )
 
 // Torrents is the resolver for the Torrents field.
-func (r *queryResolver) Torrents(ctx context.Context) ([]*gqlGenerated.Torrents, error) {
+func (r *queryResolver) Torrents(ctx context.Context) ([]*gqlGenerated.Torrent, error) {
 	clients, err := qbClient.GetClients(ctx)
 	if err != nil {
 		return nil, err
 	}
-	rtnMe := make([]*gqlGenerated.Torrents, 0)
+	rtnMe := make([]*gqlGenerated.Torrent, 0)
 
 	for _, client := range clients {
 		torrents, errL := client.GetTorrents(ctx)
@@ -26,7 +27,7 @@ func (r *queryResolver) Torrents(ctx context.Context) ([]*gqlGenerated.Torrents,
 		}
 
 		for _, torrent := range torrents {
-			curr := &gqlGenerated.Torrents{
+			curr := &gqlGenerated.Torrent{
 				Client:     torrent.Client.BasePath.String(),
 				Name:       torrent.Name,
 				Category:   torrent.Category,
@@ -45,7 +46,53 @@ func (r *queryResolver) Torrents(ctx context.Context) ([]*gqlGenerated.Torrents,
 	return rtnMe, nil
 }
 
+// Files is the resolver for the Files field.
+func (r *torrentResolver) Files(ctx context.Context, obj *gqlGenerated.Torrent) ([]*gqlGenerated.File, error) {
+	clients, err := qbClient.GetClients(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var client *qbClient.Client
+	for _, clientL := range clients {
+		if clientL.BasePath.String() != obj.Client {
+			continue
+		}
+		client = clientL
+	}
+	if client == nil {
+		return nil, fmt.Errorf("client not found")
+	}
+
+	files, err := client.GetFilesInTorrent(ctx, obj.InfoHashV1)
+	if err != nil {
+		return nil, err
+	}
+
+	rtnMe := make([]*gqlGenerated.File, 0)
+
+	for _, file := range files {
+		curr := &gqlGenerated.File{
+			Availability: file.Availability,
+			Index:        file.Index,
+			IsSeed:       file.IsSeed,
+			Name:         file.Name,
+			PieceRange:   file.PieceRange,
+			Priority:     file.Priority,
+			Progress:     file.Progress,
+			SizeBytes:    file.Size,
+		}
+		rtnMe = append(rtnMe, curr)
+	}
+
+	return rtnMe, nil
+}
+
 // Query returns gqlGenerated.QueryResolver implementation.
 func (r *Resolver) Query() gqlGenerated.QueryResolver { return &queryResolver{r} }
 
+// Torrent returns gqlGenerated.TorrentResolver implementation.
+func (r *Resolver) Torrent() gqlGenerated.TorrentResolver { return &torrentResolver{r} }
+
 type queryResolver struct{ *Resolver }
+type torrentResolver struct{ *Resolver }

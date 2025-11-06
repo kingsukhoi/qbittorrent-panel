@@ -124,6 +124,10 @@ autobind:
 # modelgen, the others will be allowed when binding to fields. Configure them to
 # your liking
 models:
+  Torrent:
+    fields:
+      Files:
+        resolver: true
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID
@@ -147,8 +151,8 @@ models:
   # do not need to worry about interoperability and only expect small numbers.
   Int:
     model:
+      - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
   Int64:
     model:
-      - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64

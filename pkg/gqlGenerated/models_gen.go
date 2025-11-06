@@ -2,10 +2,21 @@
 
 package gqlGenerated
 
+type File struct {
+	Availability float64 `json:"Availability"`
+	Index        int     `json:"Index"`
+	IsSeed       bool    `json:"IsSeed"`
+	Name         string  `json:"Name"`
+	PieceRange   []int   `json:"PieceRange"`
+	Priority     int     `json:"Priority"`
+	Progress     float64 `json:"Progress"`
+	SizeBytes    int64   `json:"SizeBytes"`
+}
+
 type Query struct {
 }
 
-type Torrents struct {
+type Torrent struct {
 	Client     string  `json:"Client"`
 	Name       string  `json:"Name"`
 	Category   string  `json:"Category"`
@@ -16,4 +27,5 @@ type Torrents struct {
 	SavePath   string  `json:"SavePath"`
 	SizeBytes  int64   `json:"SizeBytes"`
 	Tracker    string  `json:"Tracker"`
+	Files      []*File `json:"Files"`
 }
