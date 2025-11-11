@@ -6,6 +6,7 @@ package gqlResolvers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -94,7 +95,39 @@ func (r *queryResolver) Categories(ctx context.Context) ([]*gqlGenerated.Categor
 
 // Torrent is the resolver for the Torrent field.
 func (r *queryResolver) Torrent(ctx context.Context, infoHashV1 string) ([]*gqlGenerated.Torrent, error) {
-	panic(fmt.Errorf("not implemented: Torrent - Torrent"))
+	clients := qbClient.Registry().All()
+
+	rtnMe := make([]*gqlGenerated.Torrent, 0)
+
+	for _, client := range clients {
+		torrent, errL := client.GetTorrent(ctx, infoHashV1)
+		if errL != nil {
+			if errors.Is(errL, qbClient.TorrentNotFoundError) {
+				continue
+			} else {
+				return nil, errL
+			}
+		}
+
+		rtnMe = append(rtnMe, &gqlGenerated.Torrent{
+			Server:     client.BasePath.String(),
+			Name:       torrent.Name,
+			Category:   torrent.Category,
+			Ratio:      torrent.Ratio,
+			InfoHashV1: torrent.InfohashV1,
+			Comment:    torrent.Comment,
+			RootPath:   torrent.RootPath,
+			SavePath:   torrent.SavePath,
+			SizeBytes:  torrent.Size,
+			Tracker:    torrent.Tracker,
+		})
+	}
+
+	if len(rtnMe) == 0 {
+		return nil, errors.New("torrent not found")
+	}
+	return rtnMe, nil
+
 }
 
 // Files is the resolver for the Files field.
@@ -124,6 +157,9 @@ func (r *torrentResolver) Files(ctx context.Context, obj *gqlGenerated.Torrent) 
 			SizeBytes:    file.Size,
 		}
 		rtnMe = append(rtnMe, curr)
+	}
+	if len(rtnMe) == 0 {
+		return nil, errors.New("no files found")
 	}
 
 	return rtnMe, nil

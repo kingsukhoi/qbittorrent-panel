@@ -17,5 +17,8 @@ GET https://{{hostname}}/api/v2/torrents/files?hash={{hash}}
 ### Get torrent properties
 GET https://{{hostname}}/api/v2/torrents/properties?hash={{hash}}
 
+### Get torrent info
+GET https://{{hostname}}/api/v2/torrents/info?hashes={{hash}}
+
 ### Get torrent pieces hash
 GET https://{{hostname}}/api/v2/torrents/pieceHashes?hash={{hash}}

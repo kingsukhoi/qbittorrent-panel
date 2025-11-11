@@ -98,6 +98,44 @@ func (c *Client) GetTorrents(ctx context.Context) ([]*TorrentInfo, error) {
 	return rtnMe, nil
 }
 
+var TorrentNotFoundError = errors.New("torrent not found")
+
+func (c *Client) GetTorrent(ctx context.Context, infoHash string) (*TorrentInfo, error) {
+	// api/v2/torrents/info?hashs={{hash}}
+
+	data := url.Values{}
+	data.Set("hashes", infoHash)
+
+	currUrl := c.BasePath.JoinPath("/api/v2/torrents/info")
+	currUrl.RawQuery = data.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", currUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	var rtnMe []*TorrentInfo
+	err = json.Unmarshal(body, &rtnMe)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(rtnMe) != 1 {
+		return nil, TorrentNotFoundError
+	}
+
+	return rtnMe[0], nil
+
+}
+
 // GetTracker retrieves the list of trackers for a specific torrent using its infohash.
 // Returns a slice of TorrentTracker or an error.
 func (t *TorrentInfo) GetTracker(ctx context.Context, infohash string) ([]*TorrentTracker, error) {
