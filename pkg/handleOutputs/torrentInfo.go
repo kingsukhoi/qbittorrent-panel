@@ -3,6 +3,7 @@ package handleOutputs
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -37,7 +38,13 @@ func printTable(outputType string, input []*qbClient.TorrentInfo) {
 		{Name: "Name", Mode: table.Asc},
 	})
 
-	lastHost := input[0].Client.BasePath
+	var lastHost *url.URL
+
+	if len(input) > 0 {
+		lastHost = input[0].Client.BasePath
+	} else {
+		lastHost, _ = url.Parse("https://google.com/") //dummy url so we can print a blank table.
+	}
 
 	for _, i := range input {
 		if lastHost != i.Client.BasePath {
@@ -63,7 +70,6 @@ func printTable(outputType string, input []*qbClient.TorrentInfo) {
 		t.RenderTSV()
 	case "markdown":
 		t.RenderMarkdown()
-
 	}
 
 }
