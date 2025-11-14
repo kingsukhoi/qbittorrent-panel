@@ -37,7 +37,7 @@ type TorrentInfo struct {
 	Popularity               float64  `json:"popularity"`
 	Priority                 int      `json:"priority"`
 	Private                  bool     `json:"private"`
-	Progress                 int      `json:"progress"`
+	Progress                 float64  `json:"progress"`
 	Ratio                    float64  `json:"ratio"`
 	RatioLimit               int      `json:"ratio_limit"`
 	Reannounce               int      `json:"reannounce"`
