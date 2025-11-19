@@ -84,12 +84,12 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	Torrents(ctx context.Context, categories []string, servers []string) ([]*Torrent, error)
-	Categories(ctx context.Context) ([]*Category, error)
+	Torrents(ctx context.Context, categories []string, servers []string) ([]Torrent, error)
+	Categories(ctx context.Context) ([]Category, error)
 	Torrent(ctx context.Context, infoHashV1 string) ([]*Torrent, error)
 }
 type TorrentResolver interface {
-	Files(ctx context.Context, obj *Torrent) ([]*File, error)
+	Files(ctx context.Context, obj *Torrent) ([]File, error)
 }
 
 type executableSchema struct {
@@ -829,7 +829,7 @@ func (ec *executionContext) _Query_Torrents(ctx context.Context, field graphql.C
 			return ec.resolvers.Query().Torrents(ctx, fc.Args["categories"].([]string), fc.Args["servers"].([]string))
 		},
 		nil,
-		ec.marshalNTorrent2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentᚄ,
+		ec.marshalNTorrent2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentᚄ,
 		true,
 		true,
 	)
@@ -893,7 +893,7 @@ func (ec *executionContext) _Query_Categories(ctx context.Context, field graphql
 			return ec.resolvers.Query().Categories(ctx)
 		},
 		nil,
-		ec.marshalNCategory2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategoryᚄ,
+		ec.marshalNCategory2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategoryᚄ,
 		true,
 		true,
 	)
@@ -1393,7 +1393,7 @@ func (ec *executionContext) _Torrent_Files(ctx context.Context, field graphql.Co
 			return ec.resolvers.Torrent().Files(ctx, obj)
 		},
 		nil,
-		ec.marshalNFile2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFileᚄ,
+		ec.marshalNFile2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFileᚄ,
 		true,
 		true,
 	)
@@ -3594,7 +3594,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCategory2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []*Category) graphql.Marshaler {
+func (ec *executionContext) marshalNCategory2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategory(ctx context.Context, sel ast.SelectionSet, v Category) graphql.Marshaler {
+	return ec._Category(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCategory2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []Category) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3618,7 +3622,7 @@ func (ec *executionContext) marshalNCategory2ᚕᚖgithubᚗcomᚋkingsukhoiᚋq
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNCategory2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategory(ctx, sel, v[i])
+			ret[i] = ec.marshalNCategory2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategory(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3638,17 +3642,11 @@ func (ec *executionContext) marshalNCategory2ᚕᚖgithubᚗcomᚋkingsukhoiᚋq
 	return ret
 }
 
-func (ec *executionContext) marshalNCategory2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategory(ctx context.Context, sel ast.SelectionSet, v *Category) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Category(ctx, sel, v)
+func (ec *executionContext) marshalNFile2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFile(ctx context.Context, sel ast.SelectionSet, v File) graphql.Marshaler {
+	return ec._File(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*File) graphql.Marshaler {
+func (ec *executionContext) marshalNFile2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFileᚄ(ctx context.Context, sel ast.SelectionSet, v []File) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3672,7 +3670,7 @@ func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbito
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFile2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFile(ctx, sel, v[i])
+			ret[i] = ec.marshalNFile2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFile(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3690,16 +3688,6 @@ func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbito
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNFile2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFile(ctx context.Context, sel ast.SelectionSet, v *File) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._File(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
@@ -3826,6 +3814,54 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
+func (ec *executionContext) marshalNTorrent2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx context.Context, sel ast.SelectionSet, v Torrent) graphql.Marshaler {
+	return ec._Torrent(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTorrent2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentᚄ(ctx context.Context, sel ast.SelectionSet, v []Torrent) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTorrent2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNTorrent2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx context.Context, sel ast.SelectionSet, v []*Torrent) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -3862,60 +3898,6 @@ func (ec *executionContext) marshalNTorrent2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqb
 	wg.Wait()
 
 	return ret
-}
-
-func (ec *executionContext) marshalNTorrent2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentᚄ(ctx context.Context, sel ast.SelectionSet, v []*Torrent) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNTorrent2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNTorrent2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx context.Context, sel ast.SelectionSet, v *Torrent) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Torrent(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

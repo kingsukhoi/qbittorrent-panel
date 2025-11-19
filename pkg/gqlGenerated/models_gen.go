@@ -33,5 +33,5 @@ type Torrent struct {
 	SavePath   string  `json:"SavePath"`
 	SizeBytes  int64   `json:"SizeBytes"`
 	Tracker    string  `json:"Tracker"`
-	Files      []*File `json:"Files"`
+	Files      []File  `json:"Files"`
 }

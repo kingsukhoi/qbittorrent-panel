@@ -17,7 +17,7 @@ import (
 )
 
 // Torrents is the resolver for the Torrents field.
-func (r *queryResolver) Torrents(ctx context.Context, categories []string, servers []string) ([]*gqlGenerated.Torrent, error) {
+func (r *queryResolver) Torrents(ctx context.Context, categories []string, servers []string) ([]gqlGenerated.Torrent, error) {
 	var qbClients []*qbClient.Client
 
 	if len(servers) == 0 {
@@ -32,7 +32,7 @@ func (r *queryResolver) Torrents(ctx context.Context, categories []string, serve
 		}
 	}
 
-	rtnMe := make([]*gqlGenerated.Torrent, 0)
+	rtnMe := make([]gqlGenerated.Torrent, 0)
 
 	for _, client := range qbClients {
 		torrents, errL := client.GetTorrents(ctx)
@@ -46,7 +46,7 @@ func (r *queryResolver) Torrents(ctx context.Context, categories []string, serve
 				continue
 			}
 
-			curr := &gqlGenerated.Torrent{
+			curr := gqlGenerated.Torrent{
 				Server:     torrent.Client.BasePath.String(),
 				Name:       torrent.Name,
 				Category:   torrent.Category,
@@ -62,7 +62,7 @@ func (r *queryResolver) Torrents(ctx context.Context, categories []string, serve
 		}
 	}
 
-	slices.SortFunc(rtnMe, func(a, b *gqlGenerated.Torrent) int {
+	slices.SortFunc(rtnMe, func(a, b gqlGenerated.Torrent) int {
 		return strings.Compare(a.Server, b.Server)
 	})
 
@@ -70,23 +70,23 @@ func (r *queryResolver) Torrents(ctx context.Context, categories []string, serve
 }
 
 // Categories is the resolver for the Categories field.
-func (r *queryResolver) Categories(ctx context.Context) ([]*gqlGenerated.Category, error) {
+func (r *queryResolver) Categories(ctx context.Context) ([]gqlGenerated.Category, error) {
 	categories, err := helpers.GetAllCategories(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	rtnMe := make([]*gqlGenerated.Category, 0)
+	rtnMe := make([]gqlGenerated.Category, 0)
 
 	for _, category := range categories {
-		rtnMe = append(rtnMe, &gqlGenerated.Category{
+		rtnMe = append(rtnMe, gqlGenerated.Category{
 			Name:    category.Name,
 			Path:    category.SavePath,
 			Servers: category.Servers,
 		})
 	}
 
-	slices.SortFunc(rtnMe, func(a, b *gqlGenerated.Category) int {
+	slices.SortFunc(rtnMe, func(a, b gqlGenerated.Category) int {
 		return strings.Compare(a.Name, b.Name)
 	})
 
@@ -127,11 +127,10 @@ func (r *queryResolver) Torrent(ctx context.Context, infoHashV1 string) ([]*gqlG
 		return nil, errors.New("torrent not found")
 	}
 	return rtnMe, nil
-
 }
 
 // Files is the resolver for the Files field.
-func (r *torrentResolver) Files(ctx context.Context, obj *gqlGenerated.Torrent) ([]*gqlGenerated.File, error) {
+func (r *torrentResolver) Files(ctx context.Context, obj *gqlGenerated.Torrent) ([]gqlGenerated.File, error) {
 	client, exist := qbClient.Registry().Get(obj.Server)
 
 	if !exist {
@@ -143,10 +142,10 @@ func (r *torrentResolver) Files(ctx context.Context, obj *gqlGenerated.Torrent) 
 		return nil, err
 	}
 
-	rtnMe := make([]*gqlGenerated.File, 0)
+	rtnMe := make([]gqlGenerated.File, 0)
 
 	for _, file := range files {
-		curr := &gqlGenerated.File{
+		curr := gqlGenerated.File{
 			Availability: file.Availability,
 			Index:        file.Index,
 			IsSeed:       file.IsSeed,
@@ -173,3 +172,15 @@ func (r *Resolver) Torrent() gqlGenerated.TorrentResolver { return &torrentResol
 
 type queryResolver struct{ *Resolver }
 type torrentResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *queryResolver) TestNullable(ctx context.Context, input *string) (*gqlGenerated.Torrent, error) {
+	panic(fmt.Errorf("not implemented: TestNullable - TestNullable"))
+}
+*/
