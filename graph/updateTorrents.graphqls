@@ -1,0 +1,24 @@
+scalar Upload
+input UploadTorrentArgs {
+    File: Upload!
+    Category: String
+
+}
+
+type UploadTorrentResult {
+    Success: Boolean!
+}
+
+input CreateCategoryArgs {
+    Name: String!
+    Path: String!
+}
+
+type CreateCategoryResult{
+    Success: Boolean!
+}
+
+type Mutation {
+    createCategory(args:CreateCategoryArgs!):CreateCategoryResult!
+    uploadTorrent(args:UploadTorrentArgs!): UploadTorrentResult!
+}

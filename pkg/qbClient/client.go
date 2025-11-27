@@ -195,10 +195,10 @@ func (c *Client) GetCategories(ctx context.Context) (map[string]Category, error)
 
 }
 
-// SyncCategories Add the given category to the httpClient.
+// CreateCategoryIfNotExist Add the given category to the httpClient.
 // If the category exists on the httpClient, it will be skipped
 // https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-category
-func (c *Client) SyncCategories(ctx context.Context, category *Category) error {
+func (c *Client) CreateCategoryIfNotExist(ctx context.Context, category *Category) error {
 	categoryInClient := slices.ContainsFunc(category.Servers, func(s string) bool {
 		return c.BasePath.String() == s
 	})

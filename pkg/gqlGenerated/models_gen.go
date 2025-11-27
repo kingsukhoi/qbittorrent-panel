@@ -2,10 +2,23 @@
 
 package gqlGenerated
 
+import (
+	"github.com/99designs/gqlgen/graphql"
+)
+
 type Category struct {
 	Name    string   `json:"Name"`
 	Path    string   `json:"Path"`
 	Servers []string `json:"Servers"`
+}
+
+type CreateCategoryArgs struct {
+	Name string `json:"Name"`
+	Path string `json:"Path"`
+}
+
+type CreateCategoryResult struct {
+	Success bool `json:"Success"`
 }
 
 type File struct {
@@ -17,6 +30,9 @@ type File struct {
 	Priority     int     `json:"Priority"`
 	Progress     float64 `json:"Progress"`
 	SizeBytes    int64   `json:"SizeBytes"`
+}
+
+type Mutation struct {
 }
 
 type Query struct {
@@ -34,4 +50,13 @@ type Torrent struct {
 	SizeBytes  int64   `json:"SizeBytes"`
 	Tracker    string  `json:"Tracker"`
 	Files      []File  `json:"Files"`
+}
+
+type UploadTorrentArgs struct {
+	File     graphql.Upload `json:"File"`
+	Category *string        `json:"Category,omitempty"`
+}
+
+type UploadTorrentResult struct {
+	Success bool `json:"Success"`
 }

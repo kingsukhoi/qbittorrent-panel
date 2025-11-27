@@ -21,7 +21,7 @@ func (s *SyncCategoriesCmd) Run(globals *Globals, ctx context.Context) error {
 
 	for _, client := range clients {
 		for _, v := range categories {
-			err2 := client.SyncCategories(ctx, v)
+			err2 := client.CreateCategoryIfNotExist(ctx, v)
 			if err2 != nil {
 				return err2
 			}
