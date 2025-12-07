@@ -1,0 +1,22 @@
+### GraphQL File Upload
+POST http://localhost:8080/query
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="operations"
+
+{
+  "query": "mutation ($req: [Upload!]!) { uploadTorrent(args: { File: $req, Category: \"\" }) { Success } }",
+  "variables": { "req": [null] }
+}
+--WebAppBoundary
+Content-Disposition: form-data; name="map"
+
+{
+  "0": ["variables.req.0"]
+}
+--WebAppBoundary
+Content-Disposition: form-data; name="0"; filename="gqlgen.yml"
+
+< ./gqlgen.yml
+--WebAppBoundary--

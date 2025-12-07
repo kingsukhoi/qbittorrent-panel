@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(npx @biomejs/biome lint:*)",
+      "Bash(npm install:*)",
+      "Bash(npx @biomejs/biome:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pnpm codegen:*)",
+      "Bash(pnpm build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
