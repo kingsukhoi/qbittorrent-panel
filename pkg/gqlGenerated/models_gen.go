@@ -53,8 +53,8 @@ type Torrent struct {
 }
 
 type UploadTorrentArgs struct {
-	File     graphql.Upload `json:"File"`
-	Category *string        `json:"Category,omitempty"`
+	File     []*graphql.Upload `json:"File"`
+	Category *string           `json:"Category,omitempty"`
 }
 
 type UploadTorrentResult struct {

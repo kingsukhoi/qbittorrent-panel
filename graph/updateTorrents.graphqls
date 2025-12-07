@@ -1,6 +1,6 @@
 scalar Upload
 input UploadTorrentArgs {
-    File: Upload!
+    File: [Upload]!
     Category: String
 
 }

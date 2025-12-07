@@ -267,3 +267,9 @@ func (c *Client) GetFilesInTorrent(ctx context.Context, InfoHashV1 string) ([]To
 
 	return qbFiles, nil
 }
+
+// UploadTorrentFile https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent
+func (c *Client) UploadTorrentFile(ctx context.Context, file io.ReadCloser, category string) (*TorrentInfo, error) {
+
+	return nil, errors.New("not implemented")
+}
