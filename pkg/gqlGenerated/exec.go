@@ -69,7 +69,6 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateCategory func(childComplexity int, args CreateCategoryArgs) int
-		UploadTorrent  func(childComplexity int, args UploadTorrentArgs) int
 	}
 
 	Query struct {
@@ -79,6 +78,7 @@ type ComplexityRoot struct {
 	}
 
 	Torrent struct {
+		AddedOn    func(childComplexity int) int
 		Category   func(childComplexity int) int
 		Comment    func(childComplexity int) int
 		Files      func(childComplexity int) int
@@ -91,15 +91,10 @@ type ComplexityRoot struct {
 		SizeBytes  func(childComplexity int) int
 		Tracker    func(childComplexity int) int
 	}
-
-	UploadTorrentResult struct {
-		Success func(childComplexity int) int
-	}
 }
 
 type MutationResolver interface {
 	CreateCategory(ctx context.Context, args CreateCategoryArgs) (*CreateCategoryResult, error)
-	UploadTorrent(ctx context.Context, args UploadTorrentArgs) (*UploadTorrentResult, error)
 }
 type QueryResolver interface {
 	Torrents(ctx context.Context, categories []string, servers []string) ([]Torrent, error)
@@ -215,17 +210,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateCategory(childComplexity, args["args"].(CreateCategoryArgs)), true
-	case "Mutation.uploadTorrent":
-		if e.complexity.Mutation.UploadTorrent == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_uploadTorrent_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UploadTorrent(childComplexity, args["args"].(UploadTorrentArgs)), true
 
 	case "Query.Categories":
 		if e.complexity.Query.Categories == nil {
@@ -256,6 +240,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.Torrents(childComplexity, args["categories"].([]string), args["servers"].([]string)), true
 
+	case "Torrent.AddedOn":
+		if e.complexity.Torrent.AddedOn == nil {
+			break
+		}
+
+		return e.complexity.Torrent.AddedOn(childComplexity), true
 	case "Torrent.Category":
 		if e.complexity.Torrent.Category == nil {
 			break
@@ -323,13 +313,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Torrent.Tracker(childComplexity), true
 
-	case "UploadTorrentResult.Success":
-		if e.complexity.UploadTorrentResult.Success == nil {
-			break
-		}
-
-		return e.complexity.UploadTorrentResult.Success(childComplexity), true
-
 	}
 	return 0, false
 }
@@ -339,7 +322,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateCategoryArgs,
-		ec.unmarshalInputUploadTorrentArgs,
 	)
 	first := true
 
@@ -468,6 +450,7 @@ type Torrent {
     SizeBytes: Int64!
     Tracker: String!
     Files: [File!]!
+    AddedOn: Int64!
 }
 
 type Query {
@@ -475,18 +458,7 @@ type Query {
     Categories: [Category!]!
     Torrent(infoHashV1:String!): [Torrent]!
 }`, BuiltIn: false},
-	{Name: "../../graph/updateTorrents.graphqls", Input: `scalar Upload
-input UploadTorrentArgs {
-    File: [Upload]!
-    Category: String
-
-}
-
-type UploadTorrentResult {
-    Success: Boolean!
-}
-
-input CreateCategoryArgs {
+	{Name: "../../graph/updateTorrents.graphqls", Input: `input CreateCategoryArgs {
     Name: String!
     Path: String!
 }
@@ -497,7 +469,6 @@ type CreateCategoryResult{
 
 type Mutation {
     createCategory(args:CreateCategoryArgs!):CreateCategoryResult!
-    uploadTorrent(args:UploadTorrentArgs!): UploadTorrentResult!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -510,17 +481,6 @@ func (ec *executionContext) field_Mutation_createCategory_args(ctx context.Conte
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "args", ec.unmarshalNCreateCategoryArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCreateCategoryArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["args"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_uploadTorrent_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "args", ec.unmarshalNUploadTorrentArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐUploadTorrentArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -1011,51 +971,6 @@ func (ec *executionContext) fieldContext_Mutation_createCategory(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_uploadTorrent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		ec.fieldContext_Mutation_uploadTorrent,
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().UploadTorrent(ctx, fc.Args["args"].(UploadTorrentArgs))
-		},
-		nil,
-		ec.marshalNUploadTorrentResult2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐUploadTorrentResult,
-		true,
-		true,
-	)
-}
-
-func (ec *executionContext) fieldContext_Mutation_uploadTorrent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "Success":
-				return ec.fieldContext_UploadTorrentResult_Success(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type UploadTorrentResult", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_uploadTorrent_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_Torrents(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1103,6 +1018,8 @@ func (ec *executionContext) fieldContext_Query_Torrents(ctx context.Context, fie
 				return ec.fieldContext_Torrent_Tracker(ctx, field)
 			case "Files":
 				return ec.fieldContext_Torrent_Files(ctx, field)
+			case "AddedOn":
+				return ec.fieldContext_Torrent_AddedOn(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Torrent", field.Name)
 		},
@@ -1205,6 +1122,8 @@ func (ec *executionContext) fieldContext_Query_Torrent(ctx context.Context, fiel
 				return ec.fieldContext_Torrent_Tracker(ctx, field)
 			case "Files":
 				return ec.fieldContext_Torrent_Files(ctx, field)
+			case "AddedOn":
+				return ec.fieldContext_Torrent_AddedOn(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Torrent", field.Name)
 		},
@@ -1668,30 +1587,30 @@ func (ec *executionContext) fieldContext_Torrent_Files(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _UploadTorrentResult_Success(ctx context.Context, field graphql.CollectedField, obj *UploadTorrentResult) (ret graphql.Marshaler) {
+func (ec *executionContext) _Torrent_AddedOn(ctx context.Context, field graphql.CollectedField, obj *Torrent) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_UploadTorrentResult_Success,
+		ec.fieldContext_Torrent_AddedOn,
 		func(ctx context.Context) (any, error) {
-			return obj.Success, nil
+			return obj.AddedOn, nil
 		},
 		nil,
-		ec.marshalNBoolean2bool,
+		ec.marshalNInt642int64,
 		true,
 		true,
 	)
 }
 
-func (ec *executionContext) fieldContext_UploadTorrentResult_Success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Torrent_AddedOn(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "UploadTorrentResult",
+		Object:     "Torrent",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
+			return nil, errors.New("field of type Int64 does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3177,40 +3096,6 @@ func (ec *executionContext) unmarshalInputCreateCategoryArgs(ctx context.Context
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUploadTorrentArgs(ctx context.Context, obj any) (UploadTorrentArgs, error) {
-	var it UploadTorrentArgs
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"File", "Category"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "File":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("File"))
-			data, err := ec.unmarshalNUpload2ᚕᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.File = data
-		case "Category":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Category"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Category = data
-		}
-	}
-
-	return it, nil
-}
-
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3403,13 +3288,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createCategory":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createCategory(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "uploadTorrent":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_uploadTorrent(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -3650,44 +3528,10 @@ func (ec *executionContext) _Torrent(ctx context.Context, sel ast.SelectionSet, 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var uploadTorrentResultImplementors = []string{"UploadTorrentResult"}
-
-func (ec *executionContext) _UploadTorrentResult(ctx context.Context, sel ast.SelectionSet, obj *UploadTorrentResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, uploadTorrentResultImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("UploadTorrentResult")
-		case "Success":
-			out.Values[i] = ec._UploadTorrentResult_Success(ctx, field, obj)
+		case "AddedOn":
+			out.Values[i] = ec._Torrent_AddedOn(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -4057,7 +3901,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	res := graphql.MarshalBoolean(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 	}
 	return res
@@ -4123,7 +3967,7 @@ func (ec *executionContext) marshalNCreateCategoryResult2githubᚗcomᚋkingsukh
 func (ec *executionContext) marshalNCreateCategoryResult2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCreateCategoryResult(ctx context.Context, sel ast.SelectionSet, v *CreateCategoryResult) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
@@ -4188,7 +4032,7 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	res := graphql.MarshalFloatContext(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 	}
 	return graphql.WrapContextMarshaler(ctx, res)
@@ -4204,7 +4048,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 	}
 	return res
@@ -4250,7 +4094,7 @@ func (ec *executionContext) marshalNInt642int64(ctx context.Context, sel ast.Sel
 	res := graphql.MarshalInt64(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 	}
 	return res
@@ -4266,7 +4110,7 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	res := graphql.MarshalString(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 	}
 	return res
@@ -4388,49 +4232,6 @@ func (ec *executionContext) marshalNTorrent2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqb
 	return ret
 }
 
-func (ec *executionContext) unmarshalNUpload2ᚕᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v any) ([]*graphql.Upload, error) {
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]*graphql.Upload, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNUpload2ᚕᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v []*graphql.Upload) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, sel, v[i])
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalNUploadTorrentArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐUploadTorrentArgs(ctx context.Context, v any) (UploadTorrentArgs, error) {
-	res, err := ec.unmarshalInputUploadTorrentArgs(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNUploadTorrentResult2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐUploadTorrentResult(ctx context.Context, sel ast.SelectionSet, v UploadTorrentResult) graphql.Marshaler {
-	return ec._UploadTorrentResult(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUploadTorrentResult2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐUploadTorrentResult(ctx context.Context, sel ast.SelectionSet, v *UploadTorrentResult) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._UploadTorrentResult(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -4489,7 +4290,7 @@ func (ec *executionContext) marshalN__DirectiveLocation2string(ctx context.Conte
 	res := graphql.MarshalString(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 	}
 	return res
@@ -4661,7 +4462,7 @@ func (ec *executionContext) marshalN__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 func (ec *executionContext) marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx context.Context, sel ast.SelectionSet, v *introspection.Type) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
@@ -4678,7 +4479,7 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	res := graphql.MarshalString(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
 		}
 	}
 	return res
@@ -4773,24 +4574,6 @@ func (ec *executionContext) marshalOTorrent2ᚖgithubᚗcomᚋkingsukhoiᚋqbito
 		return graphql.Null
 	}
 	return ec._Torrent(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v any) (*graphql.Upload, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalUpload(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v *graphql.Upload) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	_ = sel
-	_ = ctx
-	res := graphql.MarshalUpload(*v)
-	return res
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

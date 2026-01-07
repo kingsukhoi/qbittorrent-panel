@@ -8,9 +8,62 @@ import {
     type SortingState,
     useReactTable,
 } from "@tanstack/react-table";
-import {type GetTorrentsQuery, useGetTorrentsQuery} from "../gql/graphql";
+import {useQuery} from "@apollo/client/react";
+import {gql} from "@apollo/client";
 
-type Torrent = GetTorrentsQuery["Torrents"][number];
+interface File {
+    Availability: number;
+    Index: number;
+    IsSeed: boolean;
+    Name: string;
+    PieceRange: number[];
+    Priority: number;
+    Progress: number;
+    SizeBytes: number;
+}
+
+interface Torrent {
+    Server: string;
+    Name: string;
+    Category: string;
+    Ratio: number;
+    InfoHashV1: string;
+    Comment: string;
+    RootPath: string;
+    SavePath: string;
+    SizeBytes: number;
+    Tracker: string;
+    Files: File[];
+    AddedOn: number;
+}
+
+const GET_TORRENTS = gql`
+    query GetTorrents($categories: [String!], $servers: [String!]) {
+        Torrents(categories: $categories, servers: $servers) {
+            Server
+            Name
+            Category
+            Ratio
+            InfoHashV1
+            Comment
+            RootPath
+            SavePath
+            SizeBytes
+            Tracker
+            AddedOn
+            Files {
+                Availability
+                Index
+                IsSeed
+                Name
+                PieceRange
+                Priority
+                Progress
+                SizeBytes
+            }
+        }
+    }
+`;
 
 function formatBytes(bytes: number): string {
     if (bytes === 0) return "0 B";
@@ -18,6 +71,12 @@ function formatBytes(bytes: number): string {
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${(bytes / k ** i).toFixed(2)} ${sizes[i]}`;
+}
+
+function formatDate(timestamp: number): string {
+    if (!timestamp) return "-";
+    const date = new Date(timestamp * 1000); // Convert Unix timestamp to milliseconds
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
 }
 
 // Calculate average progress
@@ -81,6 +140,11 @@ const columns = [
         size: 80,
         cell: (info) => info.getValue().toFixed(2),
     }),
+    columnHelper.accessor("AddedOn", {
+        header: "Added On",
+        size: 180,
+        cell: (info) => formatDate(info.getValue()),
+    }),
     columnHelper.accessor("Category", {
         header: "Category",
         size: 150,
@@ -112,7 +176,7 @@ export default function TorrentTable({
     onTorrentSelect: (hash: string) => void;
     searchQuery: string;
 }) {
-    const {data} = useGetTorrentsQuery({
+    const {data} = useQuery<{ Torrents: Torrent[] }>(GET_TORRENTS, {
         variables: {
             categories: selectedCategory ? [selectedCategory] : undefined,
         },
@@ -137,9 +201,22 @@ export default function TorrentTable({
     }, [data?.Torrents, searchQuery]);
 
     const [sorting, setSorting] = useState<SortingState>([
+        {id: "AddedOn", desc: true},
         {id: "Name", desc: false},
     ]);
     const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+
+    // Custom sorting handler that maintains Name as secondary sort
+    const handleSortingChange = (updater: any) => {
+        setSorting((old) => {
+            const newSorting = typeof updater === 'function' ? updater(old) : updater;
+            // Always ensure Name is the secondary sort if not already the primary sort
+            if (newSorting.length > 0 && newSorting[0].id !== 'Name') {
+                return [newSorting[0], {id: 'Name', desc: false}];
+            }
+            return newSorting;
+        });
+    };
 
     const table = useReactTable({
         data: torrents,
@@ -148,7 +225,7 @@ export default function TorrentTable({
             sorting,
             columnSizing,
         },
-        onSortingChange: setSorting,
+        onSortingChange: handleSortingChange,
         onColumnSizingChange: setColumnSizing,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),

@@ -1,6 +1,53 @@
 import {useMemo} from 'react';
 import {Folder, FolderOpen} from 'lucide-react';
-import {useGetCategoriesQuery, useGetTorrentsQuery} from '../gql/graphql';
+import {useQuery} from '@apollo/client/react';
+import {gql} from '@apollo/client';
+
+interface Category {
+    Name: string;
+    Path: string;
+    Servers: string[];
+}
+
+interface Torrent {
+    Server: string;
+    Name: string;
+    Category: string;
+    Ratio: number;
+    InfoHashV1: string;
+    Comment: string;
+    RootPath: string;
+    SavePath: string;
+    SizeBytes: number;
+    Tracker: string;
+}
+
+const GET_CATEGORIES = gql`
+    query GetCategories {
+        Categories {
+            Name
+            Path
+            Servers
+        }
+    }
+`;
+
+const GET_TORRENTS = gql`
+    query GetTorrents($categories: [String!], $servers: [String!]) {
+        Torrents(categories: $categories, servers: $servers) {
+            Server
+            Name
+            Category
+            Ratio
+            InfoHashV1
+            Comment
+            RootPath
+            SavePath
+            SizeBytes
+            Tracker
+        }
+    }
+`;
 
 export default function Sidebar({
                                     selectedCategory,
@@ -13,11 +60,11 @@ export default function Sidebar({
     width: number;
     searchQuery: string;
 }) {
-    const {data: categoriesData} = useGetCategoriesQuery({
+    const {data: categoriesData} = useQuery<{ Categories: Category[] }>(GET_CATEGORIES, {
         pollInterval: 5000, // Refresh every 5 seconds
     });
 
-    const {data: torrentsData} = useGetTorrentsQuery({
+    const {data: torrentsData} = useQuery<{ Torrents: Torrent[] }>(GET_TORRENTS, {
         pollInterval: 5000, // Refresh every 5 seconds
     });
 

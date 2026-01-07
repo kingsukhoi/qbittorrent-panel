@@ -2,10 +2,6 @@
 
 package gqlGenerated
 
-import (
-	"github.com/99designs/gqlgen/graphql"
-)
-
 type Category struct {
 	Name    string   `json:"Name"`
 	Path    string   `json:"Path"`
@@ -50,13 +46,5 @@ type Torrent struct {
 	SizeBytes  int64   `json:"SizeBytes"`
 	Tracker    string  `json:"Tracker"`
 	Files      []File  `json:"Files"`
-}
-
-type UploadTorrentArgs struct {
-	File     []*graphql.Upload `json:"File"`
-	Category *string           `json:"Category,omitempty"`
-}
-
-type UploadTorrentResult struct {
-	Success bool `json:"Success"`
+	AddedOn    int64   `json:"AddedOn"`
 }

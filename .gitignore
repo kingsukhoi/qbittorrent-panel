@@ -27,3 +27,5 @@ go.work.sum
 dev.yaml
 *.private.env.json
 *.txt
+
+test_files/*.torrent

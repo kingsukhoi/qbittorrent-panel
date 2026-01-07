@@ -1,8 +1,31 @@
 import {useState} from 'react';
 import {FileText, Info, List} from 'lucide-react';
-import type {GetTorrentsQuery} from '../gql/graphql';
 
-type Torrent = GetTorrentsQuery["Torrents"][number];
+interface File {
+    Availability: number;
+    Index: number;
+    IsSeed: boolean;
+    Name: string;
+    PieceRange: number[];
+    Priority: number;
+    Progress: number;
+    SizeBytes: number;
+}
+
+interface Torrent {
+    Server: string;
+    Name: string;
+    Category: string;
+    Ratio: number;
+    InfoHashV1: string;
+    Comment: string;
+    RootPath: string;
+    SavePath: string;
+    SizeBytes: number;
+    Tracker: string;
+    Files: File[];
+}
+
 type Tab = 'general' | 'files' | 'trackers';
 
 function formatBytes(bytes: number): string {

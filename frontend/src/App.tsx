@@ -1,11 +1,63 @@
-import {ApolloProvider} from '@apollo/client/react';
+import {ApolloProvider, useQuery} from '@apollo/client/react';
+import {gql} from '@apollo/client';
 import {apolloClient} from './lib/apollo';
 import {useEffect, useMemo, useState} from 'react';
 import Toolbar from './components/Toolbar';
 import Sidebar from './components/Sidebar';
 import TorrentTable from './components/TorrentTable';
 import DetailsPanel from './components/DetailsPanel';
-import {useGetTorrentsQuery} from './gql/graphql';
+
+interface File {
+    Availability: number;
+    Index: number;
+    IsSeed: boolean;
+    Name: string;
+    PieceRange: number[];
+    Priority: number;
+    Progress: number;
+    SizeBytes: number;
+}
+
+interface Torrent {
+    Server: string;
+    Name: string;
+    Category: string;
+    Ratio: number;
+    InfoHashV1: string;
+    Comment: string;
+    RootPath: string;
+    SavePath: string;
+    SizeBytes: number;
+    Tracker: string;
+    Files: File[];
+}
+
+const GET_TORRENTS = gql`
+    query GetTorrents($categories: [String!], $servers: [String!]) {
+        Torrents(categories: $categories, servers: $servers) {
+            Server
+            Name
+            Category
+            Ratio
+            InfoHashV1
+            Comment
+            RootPath
+            SavePath
+            SizeBytes
+            Tracker
+            Files {
+                Availability
+                Index
+                IsSeed
+                Name
+                PieceRange
+                Priority
+                Progress
+                SizeBytes
+            }
+        }
+    }
+`;
 
 function QBittorrentPanel() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -17,7 +69,7 @@ function QBittorrentPanel() {
     const [isResizingDetails, setIsResizingDetails] = useState(false);
 
     // Fetch all torrents to keep selected torrent fresh
-    const {data: torrentsData} = useGetTorrentsQuery({
+    const {data: torrentsData} = useQuery<{ Torrents: Torrent[] }>(GET_TORRENTS, {
         variables: {
             categories: selectedCategory ? [selectedCategory] : undefined,
         },

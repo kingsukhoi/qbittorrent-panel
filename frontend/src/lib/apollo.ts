@@ -1,7 +1,8 @@
-import {ApolloClient, HttpLink, InMemoryCache} from '@apollo/client';
+import {ApolloClient, HttpLink, InMemoryCache} from "@apollo/client";
+import {getApiUrl} from "./api";
 
 const httpLink = new HttpLink({
-    uri: 'http://localhost:8080/query', // Adjust this to your GraphQL endpoint
+    uri: getApiUrl("/query"),
 });
 
 export const apolloClient = new ApolloClient({

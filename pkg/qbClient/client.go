@@ -1,13 +1,17 @@
 package qbClient
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
+	"mime/multipart"
 	"net/http"
 	"net/http/cookiejar"
+	"net/textproto"
 	"net/url"
 	"slices"
 	"strings"
@@ -179,6 +183,8 @@ func (c *Client) GetCategories(ctx context.Context) (map[string]Category, error)
 		return nil, err
 	}
 
+	defer resp.Body.Close()
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -268,8 +274,72 @@ func (c *Client) GetFilesInTorrent(ctx context.Context, InfoHashV1 string) ([]To
 	return qbFiles, nil
 }
 
-// UploadTorrentFile https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent
-func (c *Client) UploadTorrentFile(ctx context.Context, file io.ReadCloser, category string) (*TorrentInfo, error) {
+// UploadTorrentFiles https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent
+func (c *Client) UploadTorrentFiles(ctx context.Context, files []UploadTorrentInfo, category string) (*TorrentInfo, error) {
 
-	return nil, errors.New("not implemented")
+	var b bytes.Buffer
+	multipartWriter := multipart.NewWriter(&b)
+
+	for _, currFile := range files {
+		fileHeader := make(textproto.MIMEHeader)
+		fileHeader.Set("Content-Disposition", fmt.Sprintf(`form-data; name="torrents"; filename="%s"`,
+			currFile.Filename))
+		fileHeader.Set("Content-Type", "application/x-bittorrent")
+
+		filePart, err := multipartWriter.CreatePart(fileHeader)
+		if err != nil {
+			return nil, err
+		}
+		_, err = io.Copy(filePart, currFile.File)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	categoryHeader := make(textproto.MIMEHeader)
+	categoryHeader.Set("Content-Disposition", fmt.Sprintf(`form-data; name="category"`))
+
+	if category != "" {
+		categoryWriter, err := multipartWriter.CreatePart(categoryHeader)
+		if err != nil {
+			return nil, err
+		}
+		_, err = categoryWriter.Write([]byte(category))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	autoTmmHeader := make(textproto.MIMEHeader)
+	autoTmmHeader.Set("Content-Disposition", fmt.Sprintf(`form-data; name="autoTMM"`))
+	autoTmmWriter, err := multipartWriter.CreatePart(autoTmmHeader)
+	if err != nil {
+		return nil, err
+	}
+	_, err = autoTmmWriter.Write([]byte("true"))
+
+	multipartWriter.Close()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		c.BasePath.JoinPath("/api/v2/torrents/add").String(), &b)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", multipartWriter.FormDataContentType())
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 415 {
+		return nil, errors.New("torrent file is invalid")
+	} else if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, errors.New(string(body))
+	}
+
+	return nil, nil
+
 }

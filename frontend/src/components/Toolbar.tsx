@@ -1,16 +1,25 @@
 import {Pause, Play, Plus, Search, Settings, Trash2} from 'lucide-react';
+import {useState} from 'react';
+import UploadTorrentModal from './UploadTorrentModal';
 
 export default function Toolbar({searchQuery, onSearchChange}: {
     searchQuery: string;
     onSearchChange: (query: string) => void
 }) {
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
     return (
-        <div
-            className="h-12 bg-[var(--qbt-bg-secondary)] border-b border-[var(--qbt-border)] flex items-center px-2 gap-1">
-            <button type="button" className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors"
-                    title="Add Torrent">
-                <Plus size={18}/>
-            </button>
+        <>
+            <div
+                className="h-12 bg-[var(--qbt-bg-secondary)] border-b border-[var(--qbt-border)] flex items-center px-2 gap-1">
+                <button
+                    type="button"
+                    className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors"
+                    title="Add Torrent"
+                    onClick={() => setIsUploadModalOpen(true)}
+                >
+                    <Plus size={18}/>
+                </button>
             <button type="button" className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors"
                     title="Resume">
                 <Play size={18}/>
@@ -36,10 +45,15 @@ export default function Toolbar({searchQuery, onSearchChange}: {
                     className="pl-8 pr-3 py-1.5 bg-[var(--qbt-bg-primary)] border border-[var(--qbt-border)] rounded text-sm text-[var(--qbt-text-primary)] placeholder:text-[var(--qbt-text-secondary)] focus:outline-none focus:border-[var(--qbt-accent)] transition-colors w-64"
                 />
             </div>
-            <button type="button" className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors"
-                    title="Settings">
-                <Settings size={18}/>
-            </button>
-        </div>
+                <button type="button" className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors"
+                        title="Settings">
+                    <Settings size={18}/>
+                </button>
+            </div>
+            <UploadTorrentModal
+                isOpen={isUploadModalOpen}
+                onClose={() => setIsUploadModalOpen(false)}
+            />
+        </>
     );
 }

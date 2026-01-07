@@ -29,6 +29,7 @@ type Torrent {
     SizeBytes: Int64!
     Tracker: String!
     Files: [File!]!
+    AddedOn: Int64!
 }
 
 type Query {
