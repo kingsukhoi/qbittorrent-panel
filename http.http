@@ -22,3 +22,6 @@ GET https://{{hostname}}/api/v2/torrents/info?hashes={{hash}}
 
 ### Get torrent pieces hash
 GET https://{{hostname}}/api/v2/torrents/pieceHashes?hash={{hash}}
+
+### Get incemental data
+GET https://{{hostname}}/api/v2/sync/maindata?rid=3
