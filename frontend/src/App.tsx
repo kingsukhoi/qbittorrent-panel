@@ -134,7 +134,7 @@ function QBittorrentPanel() {
                 <button
                     type="button"
                     aria-label="Resize sidebar"
-                    className="w-1 bg-[var(--qbt-border)] hover:bg-[var(--qbt-accent)] cursor-col-resize transition-colors"
+                    className="w-1 bg-(--qbt-border) hover:bg-(--qbt-accent) cursor-col-resize transition-colors"
                     onMouseDown={() => setIsResizingSidebar(true)}
                 />
                 <div className="flex-1 flex flex-col overflow-hidden">
@@ -148,7 +148,7 @@ function QBittorrentPanel() {
                     <button
                         type="button"
                         aria-label="Resize details panel"
-                        className="h-1 bg-[var(--qbt-border)] hover:bg-[var(--qbt-accent)] cursor-row-resize transition-colors"
+                        className="h-1 bg-(--qbt-border) hover:bg-(--qbt-accent) cursor-row-resize transition-colors"
                         onMouseDown={() => setIsResizingDetails(true)}
                     />
                     <DetailsPanel torrent={selectedTorrent} height={detailsHeight}/>

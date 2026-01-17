@@ -8,3 +8,6 @@ frontend:
 
 dev:
 	$(MAKE) -j 2 server frontend
+
+gqlGen:
+	go generate ./gqlGen.go
