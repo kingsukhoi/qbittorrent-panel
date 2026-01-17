@@ -25,3 +25,10 @@ GET https://{{hostname}}/api/v2/torrents/pieceHashes?hash={{hash}}
 
 ### Get incemental data
 GET https://{{hostname}}/api/v2/sync/maindata?rid=3
+
+### Pause Torrents
+POST https://{{hostname}}/api/v2/torrents/stop
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Referer: https://{{hostname}}
+
+hashes =

@@ -31,6 +31,19 @@ type File struct {
 type Mutation struct {
 }
 
+type PauseTorrentInfo struct {
+	Server string `json:"Server"`
+	Hash   string `json:"Hash"`
+}
+
+type PauseTorrentsArgs struct {
+	Torrents []*PauseTorrentInfo `json:"Torrents"`
+}
+
+type PauseTorrentsResults struct {
+	Success bool `json:"Success"`
+}
+
 type Query struct {
 }
 

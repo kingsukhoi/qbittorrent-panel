@@ -69,6 +69,11 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateCategory func(childComplexity int, args CreateCategoryArgs) int
+		PauseTorrents  func(childComplexity int, args PauseTorrentsArgs) int
+	}
+
+	PauseTorrentsResults struct {
+		Success func(childComplexity int) int
 	}
 
 	Query struct {
@@ -95,6 +100,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateCategory(ctx context.Context, args CreateCategoryArgs) (*CreateCategoryResult, error)
+	PauseTorrents(ctx context.Context, args PauseTorrentsArgs) (*PauseTorrentsResults, error)
 }
 type QueryResolver interface {
 	Torrents(ctx context.Context, categories []string, servers []string) ([]Torrent, error)
@@ -210,6 +216,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateCategory(childComplexity, args["args"].(CreateCategoryArgs)), true
+	case "Mutation.pauseTorrents":
+		if e.complexity.Mutation.PauseTorrents == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_pauseTorrents_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PauseTorrents(childComplexity, args["args"].(PauseTorrentsArgs)), true
+
+	case "PauseTorrentsResults.Success":
+		if e.complexity.PauseTorrentsResults.Success == nil {
+			break
+		}
+
+		return e.complexity.PauseTorrentsResults.Success(childComplexity), true
 
 	case "Query.Categories":
 		if e.complexity.Query.Categories == nil {
@@ -322,6 +346,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateCategoryArgs,
+		ec.unmarshalInputPauseTorrentInfo,
+		ec.unmarshalInputPauseTorrentsArgs,
 	)
 	first := true
 
@@ -467,8 +493,22 @@ type CreateCategoryResult{
     Success: Boolean!
 }
 
+input PauseTorrentInfo{
+    Server: String!
+    Hash: String!
+}
+
+input PauseTorrentsArgs{
+    Torrents: [PauseTorrentInfo]!
+}
+
+type PauseTorrentsResults{
+    Success: Boolean!
+}
+
 type Mutation {
     createCategory(args:CreateCategoryArgs!):CreateCategoryResult!
+    pauseTorrents(args:PauseTorrentsArgs!):PauseTorrentsResults!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -481,6 +521,17 @@ func (ec *executionContext) field_Mutation_createCategory_args(ctx context.Conte
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "args", ec.unmarshalNCreateCategoryArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCreateCategoryArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["args"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_pauseTorrents_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "args", ec.unmarshalNPauseTorrentsArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentsArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -967,6 +1018,80 @@ func (ec *executionContext) fieldContext_Mutation_createCategory(ctx context.Con
 	if fc.Args, err = ec.field_Mutation_createCategory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_pauseTorrents(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_pauseTorrents,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().PauseTorrents(ctx, fc.Args["args"].(PauseTorrentsArgs))
+		},
+		nil,
+		ec.marshalNPauseTorrentsResults2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentsResults,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_pauseTorrents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Success":
+				return ec.fieldContext_PauseTorrentsResults_Success(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PauseTorrentsResults", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_pauseTorrents_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PauseTorrentsResults_Success(ctx context.Context, field graphql.CollectedField, obj *PauseTorrentsResults) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_PauseTorrentsResults_Success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_PauseTorrentsResults_Success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PauseTorrentsResults",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
 	}
 	return fc, nil
 }
@@ -3096,6 +3221,67 @@ func (ec *executionContext) unmarshalInputCreateCategoryArgs(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPauseTorrentInfo(ctx context.Context, obj any) (PauseTorrentInfo, error) {
+	var it PauseTorrentInfo
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"Server", "Hash"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "Server":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Server"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Server = data
+		case "Hash":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Hash"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Hash = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPauseTorrentsArgs(ctx context.Context, obj any) (PauseTorrentsArgs, error) {
+	var it PauseTorrentsArgs
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"Torrents"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "Torrents":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Torrents"))
+			data, err := ec.unmarshalNPauseTorrentInfo2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentInfo(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Torrents = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3289,6 +3475,52 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createCategory(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pauseTorrents":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_pauseTorrents(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var pauseTorrentsResultsImplementors = []string{"PauseTorrentsResults"}
+
+func (ec *executionContext) _PauseTorrentsResults(ctx context.Context, sel ast.SelectionSet, obj *PauseTorrentsResults) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pauseTorrentsResultsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PauseTorrentsResults")
+		case "Success":
+			out.Values[i] = ec._PauseTorrentsResults_Success(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4100,6 +4332,40 @@ func (ec *executionContext) marshalNInt642int64(ctx context.Context, sel ast.Sel
 	return res
 }
 
+func (ec *executionContext) unmarshalNPauseTorrentInfo2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentInfo(ctx context.Context, v any) ([]*PauseTorrentInfo, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*PauseTorrentInfo, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOPauseTorrentInfo2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentInfo(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNPauseTorrentsArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentsArgs(ctx context.Context, v any) (PauseTorrentsArgs, error) {
+	res, err := ec.unmarshalInputPauseTorrentsArgs(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPauseTorrentsResults2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentsResults(ctx context.Context, sel ast.SelectionSet, v PauseTorrentsResults) graphql.Marshaler {
+	return ec._PauseTorrentsResults(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPauseTorrentsResults2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentsResults(ctx context.Context, sel ast.SelectionSet, v *PauseTorrentsResults) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PauseTorrentsResults(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4513,6 +4779,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOPauseTorrentInfo2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentInfo(ctx context.Context, v any) (*PauseTorrentInfo, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPauseTorrentInfo(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
