@@ -60,4 +60,5 @@ type Torrent struct {
 	Tracker    string  `json:"Tracker"`
 	Files      []File  `json:"Files"`
 	AddedOn    int64   `json:"AddedOn"`
+	State      string  `json:"State"`
 }

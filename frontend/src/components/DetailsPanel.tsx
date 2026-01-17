@@ -24,6 +24,7 @@ interface Torrent {
     SizeBytes: number;
     Tracker: string;
     Files: File[];
+    State: string;
 }
 
 type Tab = 'general' | 'files' | 'trackers';

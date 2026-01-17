@@ -36,6 +36,7 @@ interface Torrent {
 	Tracker: string;
 	Files: File[];
 	AddedOn: number;
+	State: string;
 }
 
 const GET_TORRENTS = gql`
@@ -52,6 +53,7 @@ const GET_TORRENTS = gql`
             SizeBytes
             Tracker
             AddedOn
+			State
             Files {
                 Availability
                 Index
@@ -184,8 +186,9 @@ const columns = [
 		header: "Name",
 		size: 300,
 		cell: (info) => (
-			<div className="truncate" title={info.getValue()}>
-				{info.getValue()}
+			<div className="flex items-center gap-2 truncate" title={info.getValue()}>
+				<StatusIcon state={info.row.original.State}/>
+				<span className="truncate">{info.getValue()}</span>
 			</div>
 		),
 	}),

@@ -94,6 +94,7 @@ type ComplexityRoot struct {
 		SavePath   func(childComplexity int) int
 		Server     func(childComplexity int) int
 		SizeBytes  func(childComplexity int) int
+		State      func(childComplexity int) int
 		Tracker    func(childComplexity int) int
 	}
 }
@@ -330,6 +331,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Torrent.SizeBytes(childComplexity), true
+	case "Torrent.State":
+		if e.complexity.Torrent.State == nil {
+			break
+		}
+
+		return e.complexity.Torrent.State(childComplexity), true
 	case "Torrent.Tracker":
 		if e.complexity.Torrent.Tracker == nil {
 			break
@@ -477,6 +484,7 @@ type Torrent {
     Tracker: String!
     Files: [File!]!
     AddedOn: Int64!
+    State: String!
 }
 
 type Query {
@@ -1145,6 +1153,8 @@ func (ec *executionContext) fieldContext_Query_Torrents(ctx context.Context, fie
 				return ec.fieldContext_Torrent_Files(ctx, field)
 			case "AddedOn":
 				return ec.fieldContext_Torrent_AddedOn(ctx, field)
+			case "State":
+				return ec.fieldContext_Torrent_State(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Torrent", field.Name)
 		},
@@ -1249,6 +1259,8 @@ func (ec *executionContext) fieldContext_Query_Torrent(ctx context.Context, fiel
 				return ec.fieldContext_Torrent_Files(ctx, field)
 			case "AddedOn":
 				return ec.fieldContext_Torrent_AddedOn(ctx, field)
+			case "State":
+				return ec.fieldContext_Torrent_State(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Torrent", field.Name)
 		},
@@ -1736,6 +1748,35 @@ func (ec *executionContext) fieldContext_Torrent_AddedOn(_ context.Context, fiel
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int64 does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Torrent_State(ctx context.Context, field graphql.CollectedField, obj *Torrent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Torrent_State,
+		func(ctx context.Context) (any, error) {
+			return obj.State, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Torrent_State(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Torrent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3762,6 +3803,11 @@ func (ec *executionContext) _Torrent(ctx context.Context, sel ast.SelectionSet, 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "AddedOn":
 			out.Values[i] = ec._Torrent_AddedOn(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "State":
+			out.Values[i] = ec._Torrent_State(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}

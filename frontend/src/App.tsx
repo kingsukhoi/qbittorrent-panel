@@ -30,6 +30,7 @@ interface Torrent {
     SizeBytes: number;
     Tracker: string;
     Files: File[];
+    State: string;
 }
 
 const GET_TORRENTS = gql`
@@ -45,6 +46,7 @@ const GET_TORRENTS = gql`
             SavePath
             SizeBytes
             Tracker
+            State
             Files {
                 Availability
                 Index
@@ -116,7 +118,11 @@ function QBittorrentPanel() {
 
     return (
         <div className="h-screen flex flex-col">
-            <Toolbar searchQuery={searchQuery} onSearchChange={setSearchQuery}/>
+            <Toolbar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedTorrent={selectedTorrent}
+            />
             <div className="flex-1 flex overflow-hidden">
                 <Sidebar
                     selectedCategory={selectedCategory}

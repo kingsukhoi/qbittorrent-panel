@@ -30,6 +30,7 @@ type Torrent {
     Tracker: String!
     Files: [File!]!
     AddedOn: Int64!
+    State: String!
 }
 
 type Query {
