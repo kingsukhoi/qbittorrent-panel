@@ -1,12 +1,40 @@
 import {Pause, Play, Plus, Search, Settings, Trash2} from 'lucide-react';
 import {useState} from 'react';
 import UploadTorrentModal from './UploadTorrentModal';
+import {useMutation} from "@apollo/client/react";
+import {gql} from "@apollo/client";
 
-export default function Toolbar({searchQuery, onSearchChange}: {
+const PAUSE_TORRENTS = gql`
+    mutation PauseTorrents($args: PauseTorrentsArgs!) {
+        pauseTorrents(args: $args) {
+            Success
+        }
+    }
+`;
+
+export default function Toolbar({searchQuery, onSearchChange, selectedTorrent}: {
     searchQuery: string;
-    onSearchChange: (query: string) => void
+    onSearchChange: (query: string) => void;
+    selectedTorrent?: { Server: string; InfoHashV1: string } | null;
 }) {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [pauseTorrents] = useMutation(PAUSE_TORRENTS);
+
+    const handlePause = () => {
+        if (!selectedTorrent) return;
+        pauseTorrents({
+            variables: {
+                args: {
+                    Torrents: [
+                        {
+                            Server: selectedTorrent.Server,
+                            Hash: selectedTorrent.InfoHashV1,
+                        },
+                    ],
+                },
+            },
+        });
+    };
 
     return (
         <>
@@ -20,12 +48,17 @@ export default function Toolbar({searchQuery, onSearchChange}: {
                 >
                     <Plus size={18}/>
                 </button>
-            <button type="button" className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors"
-                    title="Resume">
+                <button type="button"
+                        className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors disabled:opacity-50"
+                        title="Resume" disabled={!selectedTorrent}>
                 <Play size={18}/>
             </button>
-            <button type="button" className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors"
-                    title="Pause">
+                <button type="button"
+                        className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors disabled:opacity-50"
+                        title="Pause"
+                        disabled={!selectedTorrent}
+                        onClick={handlePause}
+                >
                 <Pause size={18}/>
             </button>
             <button type="button"

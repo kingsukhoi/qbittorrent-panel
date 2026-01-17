@@ -8,8 +8,9 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
-import {useQuery} from "@apollo/client/react";
+import {useMutation, useQuery} from "@apollo/client/react";
 import {gql} from "@apollo/client";
+import {AlertCircle, ArrowDown, ArrowUp, Clock, HelpCircle, Pause, RefreshCw,} from "lucide-react";
 
 interface File {
 	Availability: number;
@@ -64,6 +65,93 @@ const GET_TORRENTS = gql`
         }
     }
 `;
+
+const PAUSE_TORRENTS = gql`
+    mutation PauseTorrents($args: PauseTorrentsArgs!) {
+        pauseTorrents(args: $args) {
+            Success
+        }
+    }
+`;
+
+function PauseButton({torrent}: { torrent: Torrent }) {
+    const [pauseTorrents] = useMutation(PAUSE_TORRENTS);
+
+    const handlePause = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        pauseTorrents({
+            variables: {
+                args: {
+                    Torrents: [
+                        {
+                            Server: torrent.Server,
+                            Hash: torrent.InfoHashV1,
+                        },
+                    ],
+                },
+            },
+        });
+    };
+
+    return (
+        <button
+            type="button"
+            onClick={handlePause}
+            className="p-1 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors text-[var(--qbt-text-primary)]"
+            title="Pause"
+        >
+            <Pause size={16}/>
+        </button>
+    );
+}
+
+function StatusIcon({state}: { state: string }) {
+    let icon = null;
+    switch (state) {
+        case "downloading":
+        case "forcedDL":
+        case "metaDL":
+            icon = <ArrowDown size={16} className="text-blue-500"/>;
+            break;
+        case "uploading":
+        case "forcedUP":
+            icon = <ArrowUp size={16} className="text-green-500"/>;
+            break;
+        case "stalledDL":
+            icon = <ArrowDown size={16} className="text-blue-300"/>;
+            break;
+        case "stalledUP":
+            icon = <ArrowUp size={16} className="text-green-300"/>;
+            break;
+        case "pausedDL":
+        case "stoppedUP":
+        case "pausedUP":
+            icon = <Pause size={16} className="text-gray-500"/>;
+            break;
+        case "queuedDL":
+        case "queuedUP":
+            icon = <Clock size={16} className="text-yellow-500"/>;
+            break;
+        case "checkingDL":
+        case "checkingUP":
+        case "checkingResumeData":
+        case "allocating":
+        case "moving":
+            icon = <RefreshCw size={16} className="text-cyan-500 animate-spin"/>;
+            break;
+        case "error":
+        case "missingFiles":
+            icon = <AlertCircle size={16} className="text-red-500"/>;
+            break;
+        case "unknown":
+            icon = <HelpCircle size={16} className="text-gray-500"/>;
+            break;
+        default:
+            return <div title={state} className="w-4 h-4"/>;
+    }
+
+    return <div title={state}>{icon}</div>;
+}
 
 function formatBytes(bytes: number): string {
 	if (bytes === 0) return "0 B";
@@ -163,6 +251,12 @@ const columns = [
 			</div>
 		),
 	}),
+    columnHelper.display({
+        id: "actions",
+        header: "Actions",
+        size: 80,
+        cell: (info) => <PauseButton torrent={info.row.original}/>,
+    }),
 ];
 
 export default function TorrentTable({
