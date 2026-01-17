@@ -29,7 +29,7 @@ export default function UploadTorrentModal({
                                                isOpen,
                                                onClose,
                                            }: UploadTorrentModalProps) {
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>("");
     const [isDragging, setIsDragging] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -86,10 +86,13 @@ export default function UploadTorrentModal({
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file && file.name.endsWith(".torrent")) {
-            setSelectedFile(file);
+        const files = Array.from(e.target.files || []);
+        const torrentFiles = files.filter((file) => file.name.endsWith(".torrent"));
+        if (torrentFiles.length > 0) {
+            setSelectedFiles((prev) => [...prev, ...torrentFiles]);
         }
+        // Reset the input value so the same file can be selected again
+        e.target.value = "";
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -104,22 +107,29 @@ export default function UploadTorrentModal({
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
-        const file = e.dataTransfer.files[0];
-        if (file && file.name.endsWith(".torrent")) {
-            setSelectedFile(file);
+        const files = Array.from(e.dataTransfer.files);
+        const torrentFiles = files.filter((file) => file.name.endsWith(".torrent"));
+        if (torrentFiles.length > 0) {
+            setSelectedFiles((prev) => [...prev, ...torrentFiles]);
         }
+    };
+
+    const removeFile = (index: number) => {
+        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedFile) return;
+        if (selectedFiles.length === 0) return;
 
         setLoading(true);
         setError(null);
 
         try {
             const formData = new FormData();
-            formData.append("torrents", selectedFile);
+            for (const file of selectedFiles) {
+                formData.append("torrents", file);
+            }
             if (selectedCategory) {
                 formData.append("category", selectedCategory);
             } else {
@@ -136,7 +146,7 @@ export default function UploadTorrentModal({
                 throw new Error(errorText || "Upload failed");
             }
 
-            setSelectedFile(null);
+            setSelectedFiles([]);
             setSelectedCategory("");
             onClose();
         } catch (err) {
@@ -189,6 +199,7 @@ export default function UploadTorrentModal({
                         <input
                             ref={fileInputRef}
                             type="file"
+                            multiple
                             accept=".torrent"
                             onChange={handleFileChange}
                             className="hidden"
@@ -197,22 +208,41 @@ export default function UploadTorrentModal({
                             size={48}
                             className="mx-auto mb-4 text-[var(--qbt-text-secondary)]"
                         />
-                        {selectedFile ? (
-                            <div>
-                                <p className="text-[var(--qbt-text-primary)] font-medium mb-2">
-                                    {selectedFile.name}
-                                </p>
-                                <p className="text-[var(--qbt-text-secondary)] text-sm mb-2">
-                                    {(selectedFile.size / 1024).toFixed(2)} KB
-                                </p>
-                                <span className="text-[var(--qbt-accent)] text-sm">
-									Click to choose different file
+                        {selectedFiles.length > 0 ? (
+                            <div className="space-y-2">
+                                {selectedFiles.map((file, index) => (
+                                    <div
+                                        key={`${file.name}-${index}`}
+                                        className="flex items-center justify-between p-2 bg-[var(--qbt-bg-tertiary)] rounded"
+                                    >
+                                        <div className="text-left overflow-hidden">
+                                            <p className="text-[var(--qbt-text-primary)] font-medium truncate">
+                                                {file.name}
+                                            </p>
+                                            <p className="text-[var(--qbt-text-secondary)] text-xs">
+                                                {(file.size / 1024).toFixed(2)} KB
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeFile(index);
+                                            }}
+                                            className="p-1 hover:text-red-400 transition-colors"
+                                        >
+                                            <X size={16}/>
+                                        </button>
+                                    </div>
+                                ))}
+                                <span className="text-[var(--qbt-accent)] text-sm block mt-2">
+									Click or drop more files to add
 								</span>
                             </div>
                         ) : (
                             <>
                                 <p className="text-[var(--qbt-text-primary)] mb-2">
-                                    Drop torrent file here or click to browse
+                                    Drop torrent files here or click to browse
                                 </p>
                                 <p className="text-[var(--qbt-text-secondary)] text-sm">
                                     Only .torrent files are supported
@@ -337,7 +367,7 @@ export default function UploadTorrentModal({
                         </button>
                         <button
                             type="submit"
-                            disabled={!selectedFile || loading}
+                            disabled={selectedFiles.length === 0 || loading}
                             className="px-4 py-2 bg-[var(--qbt-accent)] hover:bg-[var(--qbt-accent)]/80 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? "Uploading..." : "Upload"}
