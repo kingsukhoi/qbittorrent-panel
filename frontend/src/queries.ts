@@ -65,3 +65,11 @@ export const PAUSE_TORRENTS = gql`
         }
     }
 `;
+
+export const RESUME_TORRENTS = gql`
+    mutation ResumeTorrents($args: ResumeTorrentsArgs!) {
+        resumeTorrents(args: $args) {
+            Success
+        }
+    }
+`;

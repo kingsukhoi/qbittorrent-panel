@@ -2,7 +2,7 @@ import {Pause, Play, Plus, Search, Settings, Trash2} from 'lucide-react';
 import {useState} from 'react';
 import UploadTorrentModal from './UploadTorrentModal';
 import {useMutation} from "@apollo/client/react";
-import {PAUSE_TORRENTS} from "../queries";
+import {PAUSE_TORRENTS, RESUME_TORRENTS} from "../queries";
 
 export default function Toolbar({searchQuery, onSearchChange, selectedTorrent}: {
     searchQuery: string;
@@ -11,10 +11,27 @@ export default function Toolbar({searchQuery, onSearchChange, selectedTorrent}: 
 }) {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [pauseTorrents] = useMutation(PAUSE_TORRENTS);
+    const [resumeTorrents] = useMutation(RESUME_TORRENTS);
 
     const handlePause = () => {
         if (!selectedTorrent) return;
         pauseTorrents({
+            variables: {
+                args: {
+                    Torrents: [
+                        {
+                            Server: selectedTorrent.Server,
+                            Hash: selectedTorrent.InfoHashV1,
+                        },
+                    ],
+                },
+            },
+        });
+    };
+
+    const handleResume = () => {
+        if (!selectedTorrent) return;
+        resumeTorrents({
             variables: {
                 args: {
                     Torrents: [
@@ -42,7 +59,9 @@ export default function Toolbar({searchQuery, onSearchChange, selectedTorrent}: 
                 </button>
                 <button type="button"
                         className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors disabled:opacity-50"
-                        title="Resume" disabled={!selectedTorrent}>
+                        title="Resume" disabled={!selectedTorrent}
+                        onClick={handleResume}
+                >
                 <Play size={18}/>
             </button>
                 <button type="button"

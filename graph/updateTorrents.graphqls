@@ -20,7 +20,21 @@ type PauseTorrentsResults{
     Success: Boolean!
 }
 
+input ResumeTorrentInfo{
+    Server: String!
+    Hash: String!
+}
+
+input ResumeTorrentsArgs{
+    Torrents: [ResumeTorrentInfo]!
+}
+
+type ResumeTorrentsResults{
+    Success: Boolean!
+}
+
 type Mutation {
     createCategory(args:CreateCategoryArgs!):CreateCategoryResult!
     pauseTorrents(args:PauseTorrentsArgs!):PauseTorrentsResults!
+    resumeTorrents(args:ResumeTorrentsArgs!):ResumeTorrentsResults!
 }

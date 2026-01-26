@@ -34,4 +34,11 @@ POST https://{{hostname}}/api/v2/torrents/stop
 Content-Type: application/x-www-form-urlencoded; charset=UTF-8
 Referer: https://{{hostname}}
 
-hashes =
+hashes = {{hash}}
+
+### Resume Torrents
+POST https://{{hostname}}/api/v2/torrents/start
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Referer: https://{{hostname}}
+
+hashes = {{hash}}

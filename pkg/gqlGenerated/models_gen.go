@@ -47,6 +47,19 @@ type PauseTorrentsResults struct {
 type Query struct {
 }
 
+type ResumeTorrentInfo struct {
+	Server string `json:"Server"`
+	Hash   string `json:"Hash"`
+}
+
+type ResumeTorrentsArgs struct {
+	Torrents []*ResumeTorrentInfo `json:"Torrents"`
+}
+
+type ResumeTorrentsResults struct {
+	Success bool `json:"Success"`
+}
+
 type Torrent struct {
 	Server     string    `json:"Server"`
 	Name       string    `json:"Name"`

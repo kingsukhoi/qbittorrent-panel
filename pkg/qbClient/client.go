@@ -301,6 +301,36 @@ func (c *Client) PauseTorrents(ctx context.Context, hashes []string) error {
 	return nil
 }
 
+func (c *Client) ResumeTorrents(ctx context.Context, hashes []string) error {
+
+	hashesString := strings.Join(hashes, "|")
+
+	data := url.Values{}
+	data.Set("hashes", hashesString)
+
+	path := c.BasePath.JoinPath("/api/v2/torrents/start")
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, path.String(), strings.NewReader(data.Encode()))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		return errors.New(string(body))
+	}
+
+	return nil
+}
+
 // UploadTorrentFiles https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#add-new-torrent
 func (c *Client) UploadTorrentFiles(ctx context.Context, files []UploadTorrentInfo, category string) (*TorrentInfo, error) {
 

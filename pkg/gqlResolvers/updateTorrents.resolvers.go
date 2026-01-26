@@ -54,6 +54,29 @@ func (r *mutationResolver) PauseTorrents(ctx context.Context, args gqlGenerated.
 	return &gqlGenerated.PauseTorrentsResults{Success: true}, nil
 }
 
+// ResumeTorrents is the resolver for the resumeTorrents field.
+func (r *mutationResolver) ResumeTorrents(ctx context.Context, args gqlGenerated.ResumeTorrentsArgs) (*gqlGenerated.ResumeTorrentsResults, error) {
+	torrentsToResume := make(map[string][]string)
+
+	for _, currTorrent := range args.Torrents {
+		torrentsToResume[currTorrent.Server] = append(torrentsToResume[currTorrent.Server], currTorrent.Hash)
+	}
+
+	for server, hashes := range torrentsToResume {
+		client, exist := qbClient.Registry().Get(server)
+		if !exist {
+			return nil, errors.New("server not found in registry")
+		}
+
+		errL := client.ResumeTorrents(ctx, hashes)
+		if errL != nil {
+			return nil, errL
+		}
+	}
+
+	return &gqlGenerated.ResumeTorrentsResults{Success: true}, nil
+}
+
 // Mutation returns gqlGenerated.MutationResolver implementation.
 func (r *Resolver) Mutation() gqlGenerated.MutationResolver { return &mutationResolver{r} }
 
