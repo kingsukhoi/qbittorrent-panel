@@ -1,6 +1,8 @@
 import {useState} from 'react';
-import {FileText, Info, List} from 'lucide-react';
+import {FileText, Info, List, RefreshCw} from 'lucide-react';
 import type {Torrent} from '../types';
+import {useQuery} from "@apollo/client/react";
+import {GET_TORRENT_TRACKERS} from "../queries";
 
 type Tab = 'general' | 'files' | 'trackers';
 
@@ -14,6 +16,13 @@ function formatBytes(bytes: number): string {
 
 export default function DetailsPanel({torrent, height}: { torrent: Torrent | null; height: number }) {
     const [activeTab, setActiveTab] = useState<Tab>('general');
+
+    const {data, loading} = useQuery<{ Torrent: Torrent[] }>(GET_TORRENT_TRACKERS, {
+        variables: {infoHashV1: torrent?.InfoHashV1},
+        skip: !torrent || activeTab !== 'trackers',
+    });
+
+    const trackers = data?.Torrent?.find((t) => t.Server === torrent?.Server)?.Trackers || [];
 
     if (!torrent) {
         return (
@@ -151,11 +160,47 @@ export default function DetailsPanel({torrent, height}: { torrent: Torrent | nul
                 )}
 
                 {activeTab === 'trackers' && (
-                    <div className="text-sm">
-                        <div className="mb-2 text-(--qbt-text-secondary)">Tracker:</div>
-                        <div className="font-mono text-xs break-all bg-(--qbt-bg-tertiary) p-2 rounded">
-                            {torrent.TrackerUrl || 'No tracker'}
-                        </div>
+                    <div className="overflow-auto h-full">
+                        {loading ? (
+                            <div className="flex items-center justify-center p-8 text-(--qbt-text-secondary)">
+                                <RefreshCw className="animate-spin mr-2" size={20}/>
+                                Loading trackers...
+                            </div>
+                        ) : trackers.length > 0 ? (
+                            <table className="w-full text-sm">
+                                <thead className="sticky top-0 bg-(--qbt-bg-secondary) border-b border-(--qbt-border)">
+                                <tr>
+                                    <th className="text-left px-2 py-1.5 font-medium w-12">Tier</th>
+                                    <th className="text-left px-2 py-1.5 font-medium">URL</th>
+                                    <th className="text-left px-2 py-1.5 font-medium">Status</th>
+                                    <th className="text-left px-2 py-1.5 font-medium w-20">Peers</th>
+                                    <th className="text-left px-2 py-1.5 font-medium w-20">Seeds</th>
+                                    <th className="text-left px-2 py-1.5 font-medium w-20">Leeches</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {trackers.map((tracker: any, i: number) => (
+                                    <tr key={i} className="border-b border-(--qbt-border) hover:bg-(--qbt-bg-tertiary)">
+                                        <td className="px-2 py-1.5">{tracker.Tier}</td>
+                                        <td className="px-2 py-1.5 truncate max-w-md" title={tracker.Url}>
+                                            {tracker.Url}
+                                        </td>
+                                        <td className="px-2 py-1.5">{tracker.Status}</td>
+                                        <td className="px-2 py-1.5 text-right pr-4">{tracker.Peers}</td>
+                                        <td className="px-2 py-1.5 text-right pr-4">{tracker.Seeds}</td>
+                                        <td className="px-2 py-1.5 text-right pr-4">{tracker.Leeches}</td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="text-sm">
+                                <div className="mb-2 text-(--qbt-text-secondary)">Tracker:</div>
+                                <div className="font-mono text-xs break-all bg-(--qbt-bg-tertiary) p-2 rounded">
+                                    {torrent.TrackerUrl || 'No tracker'}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

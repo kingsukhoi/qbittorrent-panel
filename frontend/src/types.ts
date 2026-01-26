@@ -9,6 +9,17 @@ export interface File {
     SizeBytes: number;
 }
 
+export interface Tracker {
+    Tier: number;
+    Url: string;
+    Status: string;
+    Peers: number;
+    Seeds: number;
+    Leeches: number;
+    TimesDownloaded: number;
+    Message: string;
+}
+
 export interface Torrent {
     Server: string;
     Name: string;
@@ -20,6 +31,7 @@ export interface Torrent {
     SavePath: string;
     SizeBytes: number;
     TrackerUrl: string;
+    Trackers: Tracker[];
     Files: File[];
     AddedOn: number;
     State: string;

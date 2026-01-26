@@ -11,7 +11,7 @@ import {
 import {useMutation, useQuery} from "@apollo/client/react";
 import {AlertCircle, ArrowDown, ArrowUp, Clock, HelpCircle, Pause, RefreshCw,} from "lucide-react";
 import {GET_TORRENTS, PAUSE_TORRENTS} from "../queries";
-import {Torrent} from "../types";
+import type {Torrent} from "../types";
 
 function PauseButton({torrent}: { torrent: Torrent }) {
     const [pauseTorrents] = useMutation(PAUSE_TORRENTS);

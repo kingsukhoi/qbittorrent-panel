@@ -29,6 +29,25 @@ export const GET_TORRENTS = gql`
     }
 `;
 
+export const GET_TORRENT_TRACKERS = gql`
+    query GetTorrentTrackers($infoHashV1: String!) {
+        Torrent(infoHashV1: $infoHashV1) {
+            InfoHashV1
+            Server
+            Trackers {
+                Tier
+                Url
+                Status
+                Peers
+                Seeds
+                Leeches
+                TimesDownloaded
+                Message
+            }
+        }
+    }
+`;
+
 export const GET_CATEGORIES = gql`
     query GetCategories {
         Categories {

@@ -2,7 +2,7 @@ import {Check, ChevronDown, Search, Upload, X} from "lucide-react";
 import {useEffect, useId, useRef, useState} from "react";
 import {useQuery} from "@apollo/client/react";
 import {GET_CATEGORIES} from "../queries";
-import {Category} from "../types";
+import type {Category} from "../types";
 import {getApiUrl} from "../lib/api";
 
 interface UploadTorrentModalProps {
