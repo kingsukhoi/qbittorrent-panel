@@ -2,15 +2,7 @@ import {Pause, Play, Plus, Search, Settings, Trash2} from 'lucide-react';
 import {useState} from 'react';
 import UploadTorrentModal from './UploadTorrentModal';
 import {useMutation} from "@apollo/client/react";
-import {gql} from "@apollo/client";
-
-const PAUSE_TORRENTS = gql`
-    mutation PauseTorrents($args: PauseTorrentsArgs!) {
-        pauseTorrents(args: $args) {
-            Success
-        }
-    }
-`;
+import {PAUSE_TORRENTS} from "../queries";
 
 export default function Toolbar({searchQuery, onSearchChange, selectedTorrent}: {
     searchQuery: string;

@@ -95,7 +95,19 @@ type ComplexityRoot struct {
 		Server     func(childComplexity int) int
 		SizeBytes  func(childComplexity int) int
 		State      func(childComplexity int) int
-		Tracker    func(childComplexity int) int
+		TrackerURL func(childComplexity int) int
+		Trackers   func(childComplexity int) int
+	}
+
+	Tracker struct {
+		Leeches         func(childComplexity int) int
+		Message         func(childComplexity int) int
+		Peers           func(childComplexity int) int
+		Seeds           func(childComplexity int) int
+		Status          func(childComplexity int) int
+		Tier            func(childComplexity int) int
+		TimesDownloaded func(childComplexity int) int
+		URL             func(childComplexity int) int
 	}
 }
 
@@ -109,6 +121,8 @@ type QueryResolver interface {
 	Torrent(ctx context.Context, infoHashV1 string) ([]*Torrent, error)
 }
 type TorrentResolver interface {
+	Trackers(ctx context.Context, obj *Torrent) ([]Tracker, error)
+
 	Files(ctx context.Context, obj *Torrent) ([]File, error)
 }
 
@@ -337,12 +351,67 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Torrent.State(childComplexity), true
-	case "Torrent.Tracker":
-		if e.complexity.Torrent.Tracker == nil {
+	case "Torrent.TrackerUrl":
+		if e.complexity.Torrent.TrackerURL == nil {
 			break
 		}
 
-		return e.complexity.Torrent.Tracker(childComplexity), true
+		return e.complexity.Torrent.TrackerURL(childComplexity), true
+	case "Torrent.Trackers":
+		if e.complexity.Torrent.Trackers == nil {
+			break
+		}
+
+		return e.complexity.Torrent.Trackers(childComplexity), true
+
+	case "Tracker.Leeches":
+		if e.complexity.Tracker.Leeches == nil {
+			break
+		}
+
+		return e.complexity.Tracker.Leeches(childComplexity), true
+	case "Tracker.Message":
+		if e.complexity.Tracker.Message == nil {
+			break
+		}
+
+		return e.complexity.Tracker.Message(childComplexity), true
+	case "Tracker.Peers":
+		if e.complexity.Tracker.Peers == nil {
+			break
+		}
+
+		return e.complexity.Tracker.Peers(childComplexity), true
+	case "Tracker.Seeds":
+		if e.complexity.Tracker.Seeds == nil {
+			break
+		}
+
+		return e.complexity.Tracker.Seeds(childComplexity), true
+	case "Tracker.Status":
+		if e.complexity.Tracker.Status == nil {
+			break
+		}
+
+		return e.complexity.Tracker.Status(childComplexity), true
+	case "Tracker.Tier":
+		if e.complexity.Tracker.Tier == nil {
+			break
+		}
+
+		return e.complexity.Tracker.Tier(childComplexity), true
+	case "Tracker.TimesDownloaded":
+		if e.complexity.Tracker.TimesDownloaded == nil {
+			break
+		}
+
+		return e.complexity.Tracker.TimesDownloaded(childComplexity), true
+	case "Tracker.Url":
+		if e.complexity.Tracker.URL == nil {
+			break
+		}
+
+		return e.complexity.Tracker.URL(childComplexity), true
 
 	}
 	return 0, false
@@ -471,6 +540,17 @@ type File {
     SizeBytes: Int64!
 }
 
+type Tracker {
+    Tier: Int!
+    Url: String!
+    Status: String!
+    Peers: Int!
+    Seeds: Int!
+    Leeches: Int!
+    TimesDownloaded: Int!
+    Message: String!
+}
+
 type Torrent {
     Server: String!
     Name: String!
@@ -481,7 +561,8 @@ type Torrent {
     RootPath: String!
     SavePath: String!
     SizeBytes: Int64!
-    Tracker: String!
+    Trackers: [Tracker!]!
+    TrackerUrl: String!
     Files: [File!]!
     AddedOn: Int64!
     State: String!
@@ -1147,8 +1228,10 @@ func (ec *executionContext) fieldContext_Query_Torrents(ctx context.Context, fie
 				return ec.fieldContext_Torrent_SavePath(ctx, field)
 			case "SizeBytes":
 				return ec.fieldContext_Torrent_SizeBytes(ctx, field)
-			case "Tracker":
-				return ec.fieldContext_Torrent_Tracker(ctx, field)
+			case "Trackers":
+				return ec.fieldContext_Torrent_Trackers(ctx, field)
+			case "TrackerUrl":
+				return ec.fieldContext_Torrent_TrackerUrl(ctx, field)
 			case "Files":
 				return ec.fieldContext_Torrent_Files(ctx, field)
 			case "AddedOn":
@@ -1253,8 +1336,10 @@ func (ec *executionContext) fieldContext_Query_Torrent(ctx context.Context, fiel
 				return ec.fieldContext_Torrent_SavePath(ctx, field)
 			case "SizeBytes":
 				return ec.fieldContext_Torrent_SizeBytes(ctx, field)
-			case "Tracker":
-				return ec.fieldContext_Torrent_Tracker(ctx, field)
+			case "Trackers":
+				return ec.fieldContext_Torrent_Trackers(ctx, field)
+			case "TrackerUrl":
+				return ec.fieldContext_Torrent_TrackerUrl(ctx, field)
 			case "Files":
 				return ec.fieldContext_Torrent_Files(ctx, field)
 			case "AddedOn":
@@ -1648,14 +1733,61 @@ func (ec *executionContext) fieldContext_Torrent_SizeBytes(_ context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Torrent_Tracker(ctx context.Context, field graphql.CollectedField, obj *Torrent) (ret graphql.Marshaler) {
+func (ec *executionContext) _Torrent_Trackers(ctx context.Context, field graphql.CollectedField, obj *Torrent) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
-		ec.fieldContext_Torrent_Tracker,
+		ec.fieldContext_Torrent_Trackers,
 		func(ctx context.Context) (any, error) {
-			return obj.Tracker, nil
+			return ec.resolvers.Torrent().Trackers(ctx, obj)
+		},
+		nil,
+		ec.marshalNTracker2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTrackerᚄ,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Torrent_Trackers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Torrent",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Tier":
+				return ec.fieldContext_Tracker_Tier(ctx, field)
+			case "Url":
+				return ec.fieldContext_Tracker_Url(ctx, field)
+			case "Status":
+				return ec.fieldContext_Tracker_Status(ctx, field)
+			case "Peers":
+				return ec.fieldContext_Tracker_Peers(ctx, field)
+			case "Seeds":
+				return ec.fieldContext_Tracker_Seeds(ctx, field)
+			case "Leeches":
+				return ec.fieldContext_Tracker_Leeches(ctx, field)
+			case "TimesDownloaded":
+				return ec.fieldContext_Tracker_TimesDownloaded(ctx, field)
+			case "Message":
+				return ec.fieldContext_Tracker_Message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tracker", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Torrent_TrackerUrl(ctx context.Context, field graphql.CollectedField, obj *Torrent) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Torrent_TrackerUrl,
+		func(ctx context.Context) (any, error) {
+			return obj.TrackerURL, nil
 		},
 		nil,
 		ec.marshalNString2string,
@@ -1664,7 +1796,7 @@ func (ec *executionContext) _Torrent_Tracker(ctx context.Context, field graphql.
 	)
 }
 
-func (ec *executionContext) fieldContext_Torrent_Tracker(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Torrent_TrackerUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Torrent",
 		Field:      field,
@@ -1772,6 +1904,238 @@ func (ec *executionContext) _Torrent_State(ctx context.Context, field graphql.Co
 func (ec *executionContext) fieldContext_Torrent_State(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Torrent",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tracker_Tier(ctx context.Context, field graphql.CollectedField, obj *Tracker) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Tracker_Tier,
+		func(ctx context.Context) (any, error) {
+			return obj.Tier, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Tracker_Tier(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tracker",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tracker_Url(ctx context.Context, field graphql.CollectedField, obj *Tracker) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Tracker_Url,
+		func(ctx context.Context) (any, error) {
+			return obj.URL, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Tracker_Url(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tracker",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tracker_Status(ctx context.Context, field graphql.CollectedField, obj *Tracker) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Tracker_Status,
+		func(ctx context.Context) (any, error) {
+			return obj.Status, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Tracker_Status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tracker",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tracker_Peers(ctx context.Context, field graphql.CollectedField, obj *Tracker) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Tracker_Peers,
+		func(ctx context.Context) (any, error) {
+			return obj.Peers, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Tracker_Peers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tracker",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tracker_Seeds(ctx context.Context, field graphql.CollectedField, obj *Tracker) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Tracker_Seeds,
+		func(ctx context.Context) (any, error) {
+			return obj.Seeds, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Tracker_Seeds(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tracker",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tracker_Leeches(ctx context.Context, field graphql.CollectedField, obj *Tracker) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Tracker_Leeches,
+		func(ctx context.Context) (any, error) {
+			return obj.Leeches, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Tracker_Leeches(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tracker",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tracker_TimesDownloaded(ctx context.Context, field graphql.CollectedField, obj *Tracker) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Tracker_TimesDownloaded,
+		func(ctx context.Context) (any, error) {
+			return obj.TimesDownloaded, nil
+		},
+		nil,
+		ec.marshalNInt2int,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Tracker_TimesDownloaded(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tracker",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tracker_Message(ctx context.Context, field graphql.CollectedField, obj *Tracker) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Tracker_Message,
+		func(ctx context.Context) (any, error) {
+			return obj.Message, nil
+		},
+		nil,
+		ec.marshalNString2string,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Tracker_Message(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tracker",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -3760,8 +4124,44 @@ func (ec *executionContext) _Torrent(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "Tracker":
-			out.Values[i] = ec._Torrent_Tracker(ctx, field, obj)
+		case "Trackers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Torrent_Trackers(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "TrackerUrl":
+			out.Values[i] = ec._Torrent_TrackerUrl(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -3810,6 +4210,80 @@ func (ec *executionContext) _Torrent(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Torrent_State(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var trackerImplementors = []string{"Tracker"}
+
+func (ec *executionContext) _Tracker(ctx context.Context, sel ast.SelectionSet, obj *Tracker) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, trackerImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Tracker")
+		case "Tier":
+			out.Values[i] = ec._Tracker_Tier(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Url":
+			out.Values[i] = ec._Tracker_Url(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Status":
+			out.Values[i] = ec._Tracker_Status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Peers":
+			out.Values[i] = ec._Tracker_Peers(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Seeds":
+			out.Values[i] = ec._Tracker_Seeds(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Leeches":
+			out.Values[i] = ec._Tracker_Leeches(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "TimesDownloaded":
+			out.Values[i] = ec._Tracker_TimesDownloaded(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Message":
+			out.Values[i] = ec._Tracker_Message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -4540,6 +5014,54 @@ func (ec *executionContext) marshalNTorrent2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqb
 
 	}
 	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTracker2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTracker(ctx context.Context, sel ast.SelectionSet, v Tracker) graphql.Marshaler {
+	return ec._Tracker(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTracker2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTrackerᚄ(ctx context.Context, sel ast.SelectionSet, v []Tracker) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTracker2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTracker(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
 
 	return ret
 }

@@ -1,53 +1,8 @@
 import {useMemo} from 'react';
 import {Folder, FolderOpen} from 'lucide-react';
 import {useQuery} from '@apollo/client/react';
-import {gql} from '@apollo/client';
-
-interface Category {
-    Name: string;
-    Path: string;
-    Servers: string[];
-}
-
-interface Torrent {
-    Server: string;
-    Name: string;
-    Category: string;
-    Ratio: number;
-    InfoHashV1: string;
-    Comment: string;
-    RootPath: string;
-    SavePath: string;
-    SizeBytes: number;
-    Tracker: string;
-}
-
-const GET_CATEGORIES = gql`
-    query GetCategories {
-        Categories {
-            Name
-            Path
-            Servers
-        }
-    }
-`;
-
-const GET_TORRENTS = gql`
-    query GetTorrents($categories: [String!], $servers: [String!]) {
-        Torrents(categories: $categories, servers: $servers) {
-            Server
-            Name
-            Category
-            Ratio
-            InfoHashV1
-            Comment
-            RootPath
-            SavePath
-            SizeBytes
-            Tracker
-        }
-    }
-`;
+import {GET_CATEGORIES, GET_TORRENTS} from '../queries';
+import type {Category, Torrent} from '../types';
 
 export default function Sidebar({
                                     selectedCategory,

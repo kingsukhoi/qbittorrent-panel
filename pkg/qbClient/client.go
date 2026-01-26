@@ -142,11 +142,11 @@ func (c *Client) GetTorrent(ctx context.Context, infoHash string) (*TorrentInfo,
 
 // GetTracker retrieves the list of trackers for a specific torrent using its infohash.
 // Returns a slice of TorrentTracker or an error.
-func (t *TorrentInfo) GetTracker(ctx context.Context, infohash string) ([]*TorrentTracker, error) {
+func (c *Client) GetTracker(ctx context.Context, infohash string) ([]*TorrentTracker, error) {
 	data := url.Values{}
 	data.Set("hash", infohash)
 
-	currUrl := t.Client.BasePath.JoinPath("/api/v2/torrents/trackers")
+	currUrl := c.BasePath.JoinPath("/api/v2/torrents/trackers")
 	currUrl.RawQuery = data.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", currUrl.String(), nil)
@@ -158,16 +158,13 @@ func (t *TorrentInfo) GetTracker(ctx context.Context, infohash string) ([]*Torre
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	defer resp.Body.Close()
 
 	var rtnMe []*TorrentTracker
 	err = json.Unmarshal(body, &rtnMe)
 
-	for _, v := range rtnMe {
-		v.TorrentInfo = t
-	}
 	return rtnMe, nil
 }
 

@@ -17,6 +17,17 @@ type File {
     SizeBytes: Int64!
 }
 
+type Tracker {
+    Tier: Int!
+    Url: String!
+    Status: String!
+    Peers: Int!
+    Seeds: Int!
+    Leeches: Int!
+    TimesDownloaded: Int!
+    Message: String!
+}
+
 type Torrent {
     Server: String!
     Name: String!
@@ -27,7 +38,8 @@ type Torrent {
     RootPath: String!
     SavePath: String!
     SizeBytes: Int64!
-    Tracker: String!
+    Trackers: [Tracker!]!
+    TrackerUrl: String!
     Files: [File!]!
     AddedOn: Int64!
     State: String!

@@ -1,24 +1,9 @@
 import {Check, ChevronDown, Search, Upload, X} from "lucide-react";
 import {useEffect, useId, useRef, useState} from "react";
 import {useQuery} from "@apollo/client/react";
-import {gql} from "@apollo/client";
+import {GET_CATEGORIES} from "../queries";
+import {Category} from "../types";
 import {getApiUrl} from "../lib/api";
-
-interface Category {
-    Name: string;
-    Path: string;
-    Servers: string[];
-}
-
-const GET_CATEGORIES = gql`
-    query GetCategories {
-        Categories {
-            Name
-            Path
-            Servers
-        }
-    }
-`;
 
 interface UploadTorrentModalProps {
     isOpen: boolean;

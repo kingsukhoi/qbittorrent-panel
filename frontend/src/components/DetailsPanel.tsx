@@ -1,31 +1,6 @@
 import {useState} from 'react';
 import {FileText, Info, List} from 'lucide-react';
-
-interface File {
-    Availability: number;
-    Index: number;
-    IsSeed: boolean;
-    Name: string;
-    PieceRange: number[];
-    Priority: number;
-    Progress: number;
-    SizeBytes: number;
-}
-
-interface Torrent {
-    Server: string;
-    Name: string;
-    Category: string;
-    Ratio: number;
-    InfoHashV1: string;
-    Comment: string;
-    RootPath: string;
-    SavePath: string;
-    SizeBytes: number;
-    Tracker: string;
-    Files: File[];
-    State: string;
-}
+import type {Torrent} from '../types';
 
 type Tab = 'general' | 'files' | 'trackers';
 
@@ -43,7 +18,7 @@ export default function DetailsPanel({torrent, height}: { torrent: Torrent | nul
     if (!torrent) {
         return (
             <div
-                className="bg-[var(--qbt-bg-secondary)] border-t border-[var(--qbt-border)] flex items-center justify-center text-[var(--qbt-text-secondary)]"
+                className="bg-(--qbt-bg-secondary) border-t border-(--qbt-border) flex items-center justify-center text-(--qbt-text-secondary)"
                 style={{height: `${height}px`}}>
                 Select a torrent to view details
             </div>
@@ -51,17 +26,17 @@ export default function DetailsPanel({torrent, height}: { torrent: Torrent | nul
     }
 
     return (
-        <div className="bg-[var(--qbt-bg-secondary)] border-t border-[var(--qbt-border)] flex flex-col"
+        <div className="bg-(--qbt-bg-secondary) border-t border-(--qbt-border) flex flex-col"
              style={{height: `${height}px`}}>
             {/* Tabs */}
-            <div className="flex border-b border-[var(--qbt-border)]">
+            <div className="flex border-b border-(--qbt-border)">
                 <button
                     type="button"
                     onClick={() => setActiveTab('general')}
                     className={`px-4 py-2 flex items-center gap-2 text-sm transition-colors ${
                         activeTab === 'general'
-                            ? 'bg-[var(--qbt-bg-primary)] text-white border-b-2 border-[var(--qbt-accent)]'
-                            : 'text-[var(--qbt-text-secondary)] hover:text-white hover:bg-[var(--qbt-bg-tertiary)]'
+                            ? 'bg-(--qbt-bg-primary) text-white border-b-2 border-(--qbt-accent)'
+                            : 'text-(--qbt-text-secondary) hover:text-white hover:bg-(--qbt-bg-tertiary)'
                     }`}
                 >
                     <Info size={16}/>
@@ -72,8 +47,8 @@ export default function DetailsPanel({torrent, height}: { torrent: Torrent | nul
                     onClick={() => setActiveTab('files')}
                     className={`px-4 py-2 flex items-center gap-2 text-sm transition-colors ${
                         activeTab === 'files'
-                            ? 'bg-[var(--qbt-bg-primary)] text-white border-b-2 border-[var(--qbt-accent)]'
-                            : 'text-[var(--qbt-text-secondary)] hover:text-white hover:bg-[var(--qbt-bg-tertiary)]'
+                            ? 'bg-(--qbt-bg-primary) text-white border-b-2 border-(--qbt-accent)'
+                            : 'text-(--qbt-text-secondary) hover:text-white hover:bg-(--qbt-bg-tertiary)'
                     }`}
                 >
                     <FileText size={16}/>
@@ -84,8 +59,8 @@ export default function DetailsPanel({torrent, height}: { torrent: Torrent | nul
                     onClick={() => setActiveTab('trackers')}
                     className={`px-4 py-2 flex items-center gap-2 text-sm transition-colors ${
                         activeTab === 'trackers'
-                            ? 'bg-[var(--qbt-bg-primary)] text-white border-b-2 border-[var(--qbt-accent)]'
-                            : 'text-[var(--qbt-text-secondary)] hover:text-white hover:bg-[var(--qbt-bg-tertiary)]'
+                            ? 'bg-(--qbt-bg-primary) text-white border-b-2 border-(--qbt-accent)'
+                            : 'text-(--qbt-text-secondary) hover:text-white hover:bg-(--qbt-bg-tertiary)'
                     }`}
                 >
                     <List size={16}/>
@@ -98,36 +73,36 @@ export default function DetailsPanel({torrent, height}: { torrent: Torrent | nul
                 {activeTab === 'general' && (
                     <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
                         <div>
-                            <div className="text-[var(--qbt-text-secondary)] mb-1">Name:</div>
+                            <div className="text-(--qbt-text-secondary) mb-1">Name:</div>
                             <div className="break-all">{torrent.Name}</div>
                         </div>
                         <div>
-                            <div className="text-[var(--qbt-text-secondary)] mb-1">Hash:</div>
+                            <div className="text-(--qbt-text-secondary) mb-1">Hash:</div>
                             <div className="font-mono text-xs break-all">{torrent.InfoHashV1}</div>
                         </div>
                         <div>
-                            <div className="text-[var(--qbt-text-secondary)] mb-1">Size:</div>
+                            <div className="text-(--qbt-text-secondary) mb-1">Size:</div>
                             <div>{formatBytes(torrent.SizeBytes)}</div>
                         </div>
                         <div>
-                            <div className="text-[var(--qbt-text-secondary)] mb-1">Ratio:</div>
+                            <div className="text-(--qbt-text-secondary) mb-1">Ratio:</div>
                             <div>{torrent.Ratio.toFixed(3)}</div>
                         </div>
                         <div>
-                            <div className="text-[var(--qbt-text-secondary)] mb-1">Category:</div>
+                            <div className="text-(--qbt-text-secondary) mb-1">Category:</div>
                             <div>{torrent.Category || 'None'}</div>
                         </div>
                         <div>
-                            <div className="text-[var(--qbt-text-secondary)] mb-1">Server:</div>
+                            <div className="text-(--qbt-text-secondary) mb-1">Server:</div>
                             <div>{torrent.Server}</div>
                         </div>
                         <div className="col-span-2">
-                            <div className="text-[var(--qbt-text-secondary)] mb-1">Save Path:</div>
+                            <div className="text-(--qbt-text-secondary) mb-1">Save Path:</div>
                             <div className="font-mono text-xs break-all">{torrent.SavePath}</div>
                         </div>
                         {torrent.Comment && (
                             <div className="col-span-2">
-                                <div className="text-[var(--qbt-text-secondary)] mb-1">Comment:</div>
+                                <div className="text-(--qbt-text-secondary) mb-1">Comment:</div>
                                 <div className="text-xs">{torrent.Comment}</div>
                             </div>
                         )}
@@ -138,7 +113,7 @@ export default function DetailsPanel({torrent, height}: { torrent: Torrent | nul
                     <div className="overflow-auto">
                         <table className="w-full text-sm">
                             <thead
-                                className="sticky top-0 bg-[var(--qbt-bg-secondary)] border-b border-[var(--qbt-border)]">
+                                className="sticky top-0 bg-(--qbt-bg-secondary) border-b border-(--qbt-border)">
                             <tr>
                                 <th className="text-left px-2 py-1.5 font-medium">Name</th>
                                 <th className="text-left px-2 py-1.5 font-medium">Size</th>
@@ -149,16 +124,16 @@ export default function DetailsPanel({torrent, height}: { torrent: Torrent | nul
                             <tbody>
                             {torrent.Files.map((file) => (
                                 <tr key={file.Index}
-                                    className="border-b border-[var(--qbt-border)] hover:bg-[var(--qbt-bg-tertiary)]">
+                                    className="border-b border-(--qbt-border) hover:bg-(--qbt-bg-tertiary)">
                                     <td className="px-2 py-1.5 truncate max-w-md" title={file.Name}>
                                         {file.Name}
                                     </td>
                                     <td className="px-2 py-1.5 whitespace-nowrap">{formatBytes(file.SizeBytes)}</td>
                                     <td className="px-2 py-1.5">
                                         <div
-                                            className="relative bg-[var(--qbt-bg-tertiary)] rounded-full h-3 overflow-hidden max-w-32">
+                                            className="relative bg-(--qbt-bg-tertiary) rounded-full h-3 overflow-hidden max-w-32">
                                             <div
-                                                className="bg-[var(--qbt-accent)] h-full transition-all"
+                                                className="bg-(--qbt-accent) h-full transition-all"
                                                 style={{width: `${file.Progress * 100}%`}}
                                             />
                                             <span
@@ -177,9 +152,9 @@ export default function DetailsPanel({torrent, height}: { torrent: Torrent | nul
 
                 {activeTab === 'trackers' && (
                     <div className="text-sm">
-                        <div className="mb-2 text-[var(--qbt-text-secondary)]">Tracker:</div>
-                        <div className="font-mono text-xs break-all bg-[var(--qbt-bg-tertiary)] p-2 rounded">
-                            {torrent.Tracker || 'No tracker'}
+                        <div className="mb-2 text-(--qbt-text-secondary)">Tracker:</div>
+                        <div className="font-mono text-xs break-all bg-(--qbt-bg-tertiary) p-2 rounded">
+                            {torrent.TrackerUrl || 'No tracker'}
                         </div>
                     </div>
                 )}

@@ -57,7 +57,7 @@ func (r *queryResolver) Torrents(ctx context.Context, categories []string, serve
 				RootPath:   torrent.RootPath,
 				SavePath:   torrent.SavePath,
 				SizeBytes:  torrent.Size,
-				Tracker:    torrent.Tracker,
+				TrackerURL: torrent.Tracker,
 				AddedOn:    torrent.AddedOn.Time().Unix(),
 				State:      torrent.State,
 			}
@@ -122,12 +122,43 @@ func (r *queryResolver) Torrent(ctx context.Context, infoHashV1 string) ([]*gqlG
 			RootPath:   torrent.RootPath,
 			SavePath:   torrent.SavePath,
 			SizeBytes:  torrent.Size,
-			Tracker:    torrent.Tracker,
+			TrackerURL: torrent.Tracker,
 		})
 	}
 
 	if len(rtnMe) == 0 {
 		return nil, errors.New("torrent not found")
+	}
+	return rtnMe, nil
+}
+
+// Trackers is the resolver for the Trackers field.
+func (r *torrentResolver) Trackers(ctx context.Context, obj *gqlGenerated.Torrent) ([]gqlGenerated.Tracker, error) {
+	client, exist := qbClient.Registry().Get(obj.Server)
+
+	if !exist {
+		return nil, fmt.Errorf("client not found")
+	}
+
+	trackers, err := client.GetTracker(ctx, obj.InfoHashV1)
+	if err != nil {
+		return nil, err
+	}
+
+	rtnMe := make([]gqlGenerated.Tracker, len(trackers))
+
+	for i, tracker := range trackers {
+		currGqlTracker := gqlGenerated.Tracker{
+			Tier:            tracker.Tier,
+			URL:             tracker.Url,
+			Status:          tracker.StatusString(),
+			Peers:           tracker.NumPeers,
+			Seeds:           tracker.NumSeeds,
+			Leeches:         tracker.NumLeeches,
+			TimesDownloaded: tracker.NumDownloaded,
+			Message:         tracker.Msg,
+		}
+		rtnMe[i] = currGqlTracker
 	}
 	return rtnMe, nil
 }

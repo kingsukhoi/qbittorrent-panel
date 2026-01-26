@@ -12,7 +12,9 @@ export const GET_TORRENTS = gql`
             RootPath
             SavePath
             SizeBytes
-            Tracker
+            TrackerUrl
+            AddedOn
+            State
             Files {
                 Availability
                 Index
@@ -33,6 +35,14 @@ export const GET_CATEGORIES = gql`
             Name
             Path
             Servers
+        }
+    }
+`;
+
+export const PAUSE_TORRENTS = gql`
+    mutation PauseTorrents($args: PauseTorrentsArgs!) {
+        pauseTorrents(args: $args) {
+            Success
         }
     }
 `;

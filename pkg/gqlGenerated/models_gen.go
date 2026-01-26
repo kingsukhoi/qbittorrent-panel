@@ -48,17 +48,29 @@ type Query struct {
 }
 
 type Torrent struct {
-	Server     string  `json:"Server"`
-	Name       string  `json:"Name"`
-	Category   string  `json:"Category"`
-	Ratio      float64 `json:"Ratio"`
-	InfoHashV1 string  `json:"InfoHashV1"`
-	Comment    string  `json:"Comment"`
-	RootPath   string  `json:"RootPath"`
-	SavePath   string  `json:"SavePath"`
-	SizeBytes  int64   `json:"SizeBytes"`
-	Tracker    string  `json:"Tracker"`
-	Files      []File  `json:"Files"`
-	AddedOn    int64   `json:"AddedOn"`
-	State      string  `json:"State"`
+	Server     string    `json:"Server"`
+	Name       string    `json:"Name"`
+	Category   string    `json:"Category"`
+	Ratio      float64   `json:"Ratio"`
+	InfoHashV1 string    `json:"InfoHashV1"`
+	Comment    string    `json:"Comment"`
+	RootPath   string    `json:"RootPath"`
+	SavePath   string    `json:"SavePath"`
+	SizeBytes  int64     `json:"SizeBytes"`
+	Trackers   []Tracker `json:"Trackers"`
+	TrackerURL string    `json:"TrackerUrl"`
+	Files      []File    `json:"Files"`
+	AddedOn    int64     `json:"AddedOn"`
+	State      string    `json:"State"`
+}
+
+type Tracker struct {
+	Tier            int    `json:"Tier"`
+	URL             string `json:"Url"`
+	Status          string `json:"Status"`
+	Peers           int    `json:"Peers"`
+	Seeds           int    `json:"Seeds"`
+	Leeches         int    `json:"Leeches"`
+	TimesDownloaded int    `json:"TimesDownloaded"`
+	Message         string `json:"Message"`
 }

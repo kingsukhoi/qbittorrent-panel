@@ -9,72 +9,9 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import {useMutation, useQuery} from "@apollo/client/react";
-import {gql} from "@apollo/client";
 import {AlertCircle, ArrowDown, ArrowUp, Clock, HelpCircle, Pause, RefreshCw,} from "lucide-react";
-
-interface File {
-	Availability: number;
-	Index: number;
-	IsSeed: boolean;
-	Name: string;
-	PieceRange: number[];
-	Priority: number;
-	Progress: number;
-	SizeBytes: number;
-}
-
-interface Torrent {
-	Server: string;
-	Name: string;
-	Category: string;
-	Ratio: number;
-	InfoHashV1: string;
-	Comment: string;
-	RootPath: string;
-	SavePath: string;
-	SizeBytes: number;
-	Tracker: string;
-	Files: File[];
-	AddedOn: number;
-	State: string;
-}
-
-const GET_TORRENTS = gql`
-    query GetTorrents($categories: [String!], $servers: [String!]) {
-        Torrents(categories: $categories, servers: $servers) {
-            Server
-            Name
-            Category
-            Ratio
-            InfoHashV1
-            Comment
-            RootPath
-            SavePath
-            SizeBytes
-            Tracker
-            AddedOn
-			State
-            Files {
-                Availability
-                Index
-                IsSeed
-                Name
-                PieceRange
-                Priority
-                Progress
-                SizeBytes
-            }
-        }
-    }
-`;
-
-const PAUSE_TORRENTS = gql`
-    mutation PauseTorrents($args: PauseTorrentsArgs!) {
-        pauseTorrents(args: $args) {
-            Success
-        }
-    }
-`;
+import {GET_TORRENTS, PAUSE_TORRENTS} from "../queries";
+import {Torrent} from "../types";
 
 function PauseButton({torrent}: { torrent: Torrent }) {
     const [pauseTorrents] = useMutation(PAUSE_TORRENTS);
