@@ -8,41 +8,10 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
-import {useMutation, useQuery} from "@apollo/client/react";
+import {useQuery} from "@apollo/client/react";
 import {AlertCircle, ArrowDown, ArrowUp, Clock, HelpCircle, Pause, RefreshCw,} from "lucide-react";
-import {GET_TORRENTS, PAUSE_TORRENTS} from "../queries";
+import {GET_TORRENTS} from "../queries";
 import type {Torrent} from "../types";
-
-function PauseButton({torrent}: { torrent: Torrent }) {
-    const [pauseTorrents] = useMutation(PAUSE_TORRENTS);
-
-    const handlePause = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        pauseTorrents({
-            variables: {
-                args: {
-                    Torrents: [
-                        {
-                            Server: torrent.Server,
-                            Hash: torrent.InfoHashV1,
-                        },
-                    ],
-                },
-            },
-        });
-    };
-
-    return (
-        <button
-            type="button"
-            onClick={handlePause}
-            className="p-1 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors text-[var(--qbt-text-primary)]"
-            title="Pause"
-        >
-            <Pause size={16}/>
-        </button>
-    );
-}
 
 function StatusIcon({state}: { state: string }) {
     let icon = null;
@@ -191,12 +160,7 @@ const columns = [
 			</div>
 		),
 	}),
-    columnHelper.display({
-        id: "actions",
-        header: "Actions",
-        size: 80,
-        cell: (info) => <PauseButton torrent={info.row.original}/>,
-    }),
+
 ];
 
 export default function TorrentTable({
