@@ -8,6 +8,7 @@ package gqlResolvers
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/gqlGenerated"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
@@ -75,6 +76,11 @@ func (r *mutationResolver) ResumeTorrents(ctx context.Context, args gqlGenerated
 	}
 
 	return &gqlGenerated.ResumeTorrentsResults{Success: true}, nil
+}
+
+// DeleteTorrents is the resolver for the deleteTorrents field.
+func (r *mutationResolver) DeleteTorrents(ctx context.Context, args gqlGenerated.DeleteTorrentsArgs) (*gqlGenerated.DeleteTorrentsResults, error) {
+	panic(fmt.Errorf("not implemented: DeleteTorrents - deleteTorrents"))
 }
 
 // Mutation returns gqlGenerated.MutationResolver implementation.

@@ -33,8 +33,22 @@ type ResumeTorrentsResults{
     Success: Boolean!
 }
 
+input DeleteTorrentInfo{
+    Server: String!
+    Hash: String!
+}
+
+input DeleteTorrentsArgs{
+    Torrents: [DeleteTorrentInfo]!
+}
+
+type DeleteTorrentsResults{
+    Success: Boolean!
+}
+
 type Mutation {
     createCategory(args:CreateCategoryArgs!):CreateCategoryResult!
     pauseTorrents(args:PauseTorrentsArgs!):PauseTorrentsResults!
     resumeTorrents(args:ResumeTorrentsArgs!):ResumeTorrentsResults!
+    deleteTorrents(args:DeleteTorrentsArgs!):DeleteTorrentsResults!
 }

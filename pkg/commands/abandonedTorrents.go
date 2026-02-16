@@ -25,7 +25,7 @@ func (d *ListAbandonedTorrents) Run(globals *Globals, ctx context.Context) error
 		}
 
 		for _, torrent := range torrents {
-			resp2, err2 := torrent.GetTracker(ctx, torrent.Hash)
+			resp2, err2 := client.GetTracker(ctx, torrent.Hash)
 			if err2 != nil {
 				return err2
 			}

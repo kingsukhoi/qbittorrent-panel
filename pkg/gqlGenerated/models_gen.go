@@ -17,6 +17,19 @@ type CreateCategoryResult struct {
 	Success bool `json:"Success"`
 }
 
+type DeleteTorrentInfo struct {
+	Server string `json:"Server"`
+	Hash   string `json:"Hash"`
+}
+
+type DeleteTorrentsArgs struct {
+	Torrents []*DeleteTorrentInfo `json:"Torrents"`
+}
+
+type DeleteTorrentsResults struct {
+	Success bool `json:"Success"`
+}
+
 type File struct {
 	Availability float64 `json:"Availability"`
 	Index        int     `json:"Index"`

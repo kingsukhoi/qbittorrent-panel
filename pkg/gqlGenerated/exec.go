@@ -56,6 +56,10 @@ type ComplexityRoot struct {
 		Success func(childComplexity int) int
 	}
 
+	DeleteTorrentsResults struct {
+		Success func(childComplexity int) int
+	}
+
 	File struct {
 		Availability func(childComplexity int) int
 		Index        func(childComplexity int) int
@@ -69,6 +73,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateCategory func(childComplexity int, args CreateCategoryArgs) int
+		DeleteTorrents func(childComplexity int, args DeleteTorrentsArgs) int
 		PauseTorrents  func(childComplexity int, args PauseTorrentsArgs) int
 		ResumeTorrents func(childComplexity int, args ResumeTorrentsArgs) int
 	}
@@ -120,6 +125,7 @@ type MutationResolver interface {
 	CreateCategory(ctx context.Context, args CreateCategoryArgs) (*CreateCategoryResult, error)
 	PauseTorrents(ctx context.Context, args PauseTorrentsArgs) (*PauseTorrentsResults, error)
 	ResumeTorrents(ctx context.Context, args ResumeTorrentsArgs) (*ResumeTorrentsResults, error)
+	DeleteTorrents(ctx context.Context, args DeleteTorrentsArgs) (*DeleteTorrentsResults, error)
 }
 type QueryResolver interface {
 	Torrents(ctx context.Context, categories []string, servers []string) ([]Torrent, error)
@@ -176,6 +182,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.CreateCategoryResult.Success(childComplexity), true
+
+	case "DeleteTorrentsResults.Success":
+		if e.complexity.DeleteTorrentsResults.Success == nil {
+			break
+		}
+
+		return e.complexity.DeleteTorrentsResults.Success(childComplexity), true
 
 	case "File.Availability":
 		if e.complexity.File.Availability == nil {
@@ -237,6 +250,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.CreateCategory(childComplexity, args["args"].(CreateCategoryArgs)), true
+	case "Mutation.deleteTorrents":
+		if e.complexity.Mutation.DeleteTorrents == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteTorrents_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteTorrents(childComplexity, args["args"].(DeleteTorrentsArgs)), true
 	case "Mutation.pauseTorrents":
 		if e.complexity.Mutation.PauseTorrents == nil {
 			break
@@ -446,6 +470,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateCategoryArgs,
+		ec.unmarshalInputDeleteTorrentInfo,
+		ec.unmarshalInputDeleteTorrentsArgs,
 		ec.unmarshalInputPauseTorrentInfo,
 		ec.unmarshalInputPauseTorrentsArgs,
 		ec.unmarshalInputResumeTorrentInfo,
@@ -634,10 +660,24 @@ type ResumeTorrentsResults{
     Success: Boolean!
 }
 
+input DeleteTorrentInfo{
+    Server: String!
+    Hash: String!
+}
+
+input DeleteTorrentsArgs{
+    Torrents: [DeleteTorrentInfo]!
+}
+
+type DeleteTorrentsResults{
+    Success: Boolean!
+}
+
 type Mutation {
     createCategory(args:CreateCategoryArgs!):CreateCategoryResult!
     pauseTorrents(args:PauseTorrentsArgs!):PauseTorrentsResults!
     resumeTorrents(args:ResumeTorrentsArgs!):ResumeTorrentsResults!
+    deleteTorrents(args:DeleteTorrentsArgs!):DeleteTorrentsResults!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -650,6 +690,17 @@ func (ec *executionContext) field_Mutation_createCategory_args(ctx context.Conte
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "args", ec.unmarshalNCreateCategoryArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCreateCategoryArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["args"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteTorrents_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "args", ec.unmarshalNDeleteTorrentsArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentsArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -875,6 +926,35 @@ func (ec *executionContext) _CreateCategoryResult_Success(ctx context.Context, f
 func (ec *executionContext) fieldContext_CreateCategoryResult_Success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CreateCategoryResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DeleteTorrentsResults_Success(ctx context.Context, field graphql.CollectedField, obj *DeleteTorrentsResults) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_DeleteTorrentsResults_Success,
+		func(ctx context.Context) (any, error) {
+			return obj.Success, nil
+		},
+		nil,
+		ec.marshalNBoolean2bool,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_DeleteTorrentsResults_Success(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DeleteTorrentsResults",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1246,6 +1326,51 @@ func (ec *executionContext) fieldContext_Mutation_resumeTorrents(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_resumeTorrents_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteTorrents(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Mutation_deleteTorrents,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.resolvers.Mutation().DeleteTorrents(ctx, fc.Args["args"].(DeleteTorrentsArgs))
+		},
+		nil,
+		ec.marshalNDeleteTorrentsResults2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentsResults,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteTorrents(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Success":
+				return ec.fieldContext_DeleteTorrentsResults_Success(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DeleteTorrentsResults", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteTorrents_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3751,6 +3876,67 @@ func (ec *executionContext) unmarshalInputCreateCategoryArgs(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDeleteTorrentInfo(ctx context.Context, obj any) (DeleteTorrentInfo, error) {
+	var it DeleteTorrentInfo
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"Server", "Hash"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "Server":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Server"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Server = data
+		case "Hash":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Hash"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Hash = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputDeleteTorrentsArgs(ctx context.Context, obj any) (DeleteTorrentsArgs, error) {
+	var it DeleteTorrentsArgs
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"Torrents"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "Torrents":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Torrents"))
+			data, err := ec.unmarshalNDeleteTorrentInfo2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentInfo(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Torrents = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPauseTorrentInfo(ctx context.Context, obj any) (PauseTorrentInfo, error) {
 	var it PauseTorrentInfo
 	asMap := map[string]any{}
@@ -3969,6 +4155,45 @@ func (ec *executionContext) _CreateCategoryResult(ctx context.Context, sel ast.S
 	return out
 }
 
+var deleteTorrentsResultsImplementors = []string{"DeleteTorrentsResults"}
+
+func (ec *executionContext) _DeleteTorrentsResults(ctx context.Context, sel ast.SelectionSet, obj *DeleteTorrentsResults) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, deleteTorrentsResultsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DeleteTorrentsResults")
+		case "Success":
+			out.Values[i] = ec._DeleteTorrentsResults_Success(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var fileImplementors = []string{"File"}
 
 func (ec *executionContext) _File(ctx context.Context, sel ast.SelectionSet, obj *File) graphql.Marshaler {
@@ -4079,6 +4304,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "resumeTorrents":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_resumeTorrents(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deleteTorrents":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteTorrents(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -4958,6 +5190,40 @@ func (ec *executionContext) marshalNCreateCategoryResult2ᚖgithubᚗcomᚋkings
 	return ec._CreateCategoryResult(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNDeleteTorrentInfo2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentInfo(ctx context.Context, v any) ([]*DeleteTorrentInfo, error) {
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*DeleteTorrentInfo, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalODeleteTorrentInfo2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentInfo(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNDeleteTorrentsArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentsArgs(ctx context.Context, v any) (DeleteTorrentsArgs, error) {
+	res, err := ec.unmarshalInputDeleteTorrentsArgs(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDeleteTorrentsResults2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentsResults(ctx context.Context, sel ast.SelectionSet, v DeleteTorrentsResults) graphql.Marshaler {
+	return ec._DeleteTorrentsResults(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDeleteTorrentsResults2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentsResults(ctx context.Context, sel ast.SelectionSet, v *DeleteTorrentsResults) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DeleteTorrentsResults(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNFile2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFile(ctx context.Context, sel ast.SelectionSet, v File) graphql.Marshaler {
 	return ec._File(ctx, sel, &v)
 }
@@ -5613,6 +5879,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalODeleteTorrentInfo2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentInfo(ctx context.Context, v any) (*DeleteTorrentInfo, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputDeleteTorrentInfo(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOPauseTorrentInfo2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentInfo(ctx context.Context, v any) (*PauseTorrentInfo, error) {
