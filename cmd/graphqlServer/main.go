@@ -15,6 +15,10 @@ import (
 )
 
 func main() {
+	configFile := os.Getenv("CONFIG_FILE")
+	if configFile == "" {
+		configFile = "./dev.yaml"
+	}
 	cfg := configuration.MustGetConfig("./dev.yaml")
 	// init the clients before graphql
 
