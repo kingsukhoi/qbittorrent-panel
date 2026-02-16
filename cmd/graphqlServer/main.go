@@ -15,11 +15,11 @@ import (
 )
 
 func main() {
-	configFile := os.Getenv("CONFIG_FILE")
-	if configFile == "" {
+	configFile, exist := os.LookupEnv("CONFIG_FILE")
+	if !exist {
 		configFile = "./dev.yaml"
 	}
-	cfg := configuration.MustGetConfig("./dev.yaml")
+	cfg := configuration.MustGetConfig(configFile)
 	// init the clients before graphql
 
 	if cfg.GetEnv() == configuration.EnvDev {
