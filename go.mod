@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/99designs/gqlgen v0.17.86
-	github.com/alecthomas/kong v1.13.0
+	github.com/alecthomas/kong v1.14.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jedib0t/go-pretty/v6 v6.7.8
 	github.com/labstack/echo/v4 v4.15.0
