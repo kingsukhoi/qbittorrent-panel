@@ -10,7 +10,7 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      go-deps:
+      gh-actions:
         applies-to: version-updates
         patterns:
           - "*"
