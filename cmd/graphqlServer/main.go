@@ -43,6 +43,10 @@ func main() {
 		e.Debug = true
 	}
 
+	// Root context is cancelled on Ctrl+C / SIGINT
+	rootCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	// Start server
 	go func() {
 		err := e.Start(cfg.Port)
@@ -51,14 +55,37 @@ func main() {
 		}
 	}()
 
-	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
+	// start qbittorrent client keep alive (stops on shutdown)
+	go func(ctx context.Context) {
+		ticker := time.NewTicker(30 * time.Minute)
+		defer ticker.Stop()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				clients := qbClient.Registry().All()
+				for _, client := range clients {
+					reqCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+					_, err := client.GetVersion(reqCtx)
+					cancel()
+
+					if err != nil {
+						slog.Error("qbittorrent keep-alive failed", "basePath", client.BasePath.String(), "err", err)
+					}
+				}
+			}
+		}
+	}(rootCtx)
+
+	// Wait for interrupt signal
+	<-rootCtx.Done()
+
+	// Graceful shutdown with timeout
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
+	if err := e.Shutdown(shutdownCtx); err != nil {
 		e.Logger.Fatal(err)
 	}
 }

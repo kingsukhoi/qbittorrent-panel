@@ -400,3 +400,23 @@ func (c *Client) UploadTorrentFiles(ctx context.Context, files []UploadTorrentIn
 	return nil, nil
 
 }
+
+func (c *Client) GetVersion(ctx context.Context) (string, error) {
+	//https://{{hostname}}/api/v2/app/webapiVersion
+
+	currPath := c.BasePath.JoinPath("/api/v2/app/webapiVersion")
+
+	req, err := http.NewRequestWithContext(ctx, "GET", currPath.String(), nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	return string(body), nil
+}

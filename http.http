@@ -42,3 +42,10 @@ Content-Type: application/x-www-form-urlencoded; charset=UTF-8
 Referer: https://{{hostname}}
 
 hashes = {{hash}}
+
+### api version
+POST https://{{hostname}}/api/v2/app/webapiVersion
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Referer: https://{{hostname}}
+
+hashes = {{hash}}
