@@ -61,6 +61,8 @@ jobs:
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Make date ver
         id: datever
+        env:
+          TZ: "UTC"
         run: echo "datever=$(date +"%Y.%m.%d.%H.%M")" >> $GITHUB_OUTPUT
       - name: Cache
         uses: actions/cache@v5
