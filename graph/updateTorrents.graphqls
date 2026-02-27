@@ -40,6 +40,7 @@ input DeleteTorrentInfo{
 
 input DeleteTorrentsArgs{
     Torrents: [DeleteTorrentInfo]!
+    DeleteFiles: Boolean! = false
 }
 
 type DeleteTorrentsResults{

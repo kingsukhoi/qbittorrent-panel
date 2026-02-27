@@ -667,6 +667,7 @@ input DeleteTorrentInfo{
 
 input DeleteTorrentsArgs{
     Torrents: [DeleteTorrentInfo]!
+    DeleteFiles: Boolean! = false
 }
 
 type DeleteTorrentsResults{
@@ -3917,7 +3918,11 @@ func (ec *executionContext) unmarshalInputDeleteTorrentsArgs(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"Torrents"}
+	if _, present := asMap["DeleteFiles"]; !present {
+		asMap["DeleteFiles"] = false
+	}
+
+	fieldsInOrder := [...]string{"Torrents", "DeleteFiles"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3931,6 +3936,13 @@ func (ec *executionContext) unmarshalInputDeleteTorrentsArgs(ctx context.Context
 				return it, err
 			}
 			it.Torrents = data
+		case "DeleteFiles":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("DeleteFiles"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DeleteFiles = data
 		}
 	}
 

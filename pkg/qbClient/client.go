@@ -14,6 +14,7 @@ import (
 	"net/textproto"
 	"net/url"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
@@ -399,6 +400,34 @@ func (c *Client) UploadTorrentFiles(ctx context.Context, files []UploadTorrentIn
 
 	return nil, nil
 
+}
+
+func (c *Client) DeleteTorrent(ctx context.Context, hashes []string, keepFiles bool) error {
+	//https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#delete-torrents
+	hashesString := strings.Join(hashes, "|")
+
+	data := url.Values{}
+	data.Set("hashes", hashesString)
+	data.Set("deleteFiles", strconv.FormatBool(keepFiles))
+
+	path := c.BasePath.JoinPath("/api/v2/torrents/delete")
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, path.String(), strings.NewReader(data.Encode()))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return errors.New(resp.Status)
+	}
+	return nil
 }
 
 func (c *Client) GetVersion(ctx context.Context) (string, error) {

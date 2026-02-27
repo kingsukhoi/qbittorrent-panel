@@ -23,7 +23,8 @@ type DeleteTorrentInfo struct {
 }
 
 type DeleteTorrentsArgs struct {
-	Torrents []*DeleteTorrentInfo `json:"Torrents"`
+	Torrents    []*DeleteTorrentInfo `json:"Torrents"`
+	DeleteFiles bool                 `json:"DeleteFiles"`
 }
 
 type DeleteTorrentsResults struct {
