@@ -15,6 +15,7 @@ import (
 )
 
 func main() {
+
 	configFile, exist := os.LookupEnv("CONFIG_FILE")
 	if !exist {
 		configFile = "./dev.yaml"

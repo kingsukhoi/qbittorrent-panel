@@ -49,3 +49,6 @@ Content-Type: application/x-www-form-urlencoded; charset=UTF-8
 Referer: https://{{hostname}}
 
 hashes = {{hash}}
+
+### sync endopoint
+GET https://{{hostname}}/api/v2/sync/maindata?rid=7
