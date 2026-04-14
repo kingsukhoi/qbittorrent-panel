@@ -16,6 +16,10 @@ INSERT INTO torrents (info_hash_v1,
                       last_updated,
                       path)
 VALUES (?, ?, ?, ?, ?)
+on conflict (info_hash_v1,server_url) do update
+    set name         = excluded.name,
+        last_updated = excluded.last_updated,
+        path         = excluded.path
 `
 
 type CreateTorrentParams struct {

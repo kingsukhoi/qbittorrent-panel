@@ -2,8 +2,10 @@ package database
 
 import (
 	"database/sql"
+	_ "embed"
 	"sync"
 
+	qbittorrent_panel "github.com/kingsukhoi/qbitorrent-panel"
 	_ "modernc.org/sqlite"
 )
 
@@ -21,6 +23,12 @@ func MustGet() *sql.DB {
 		}
 		db.SetMaxOpenConns(1)
 		instance = db
+
+		_, err = instance.Exec(qbittorrent_panel.SQL_SCHEMA)
+		if err != nil {
+			panic(err)
+		}
+
 	})
 	return instance
 }

@@ -14,4 +14,8 @@ INSERT INTO torrents (info_hash_v1,
                       name,
                       last_updated,
                       path)
-VALUES (?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?)
+on conflict (info_hash_v1,server_url) do update
+    set name         = excluded.name,
+        last_updated = excluded.last_updated,
+        path         = excluded.path;
