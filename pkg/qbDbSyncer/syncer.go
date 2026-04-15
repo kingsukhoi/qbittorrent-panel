@@ -3,15 +3,12 @@ package qbDbSyncer
 import (
 	"context"
 	"log/slog"
-	"sync"
 	"time"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/database"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/sqlc"
 )
-
-var lock sync.Mutex
 
 func SyncDbLoop(ctx context.Context) {
 	ticker := time.NewTicker(2 * time.Second)
@@ -20,16 +17,11 @@ func SyncDbLoop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			locked := lock.TryLock()
-			if !locked {
-				slog.Error("Failed to acquire lock")
-				continue
-			}
 			errL := syncTorrents(ctx)
 			if errL != nil {
 				slog.Error("Error syncing torrents", "error", errL)
 			}
-			lock.Unlock()
+			ticker.Reset(2 * time.Second)
 		}
 	}
 }
