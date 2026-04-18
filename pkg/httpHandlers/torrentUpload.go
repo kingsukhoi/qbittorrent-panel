@@ -6,10 +6,10 @@ import (
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/helpers"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func TorrentUpload(c echo.Context) error {
+func TorrentUpload(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	category := c.FormValue("category")

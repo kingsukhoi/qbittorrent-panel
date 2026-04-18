@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func HealthCheck(c echo.Context) error {
+func HealthCheck(c *echo.Context) error {
 	clients := qbClient.Registry().All()
 
 	for _, client := range clients {

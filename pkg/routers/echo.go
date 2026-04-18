@@ -10,15 +10,13 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/configuration"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/httpHandlers"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 )
 
 func NewEchoHandler(gqlHandler *handler.Server) *echo.Echo {
 
 	e := echo.New()
-
-	e.HideBanner = true
 
 	// Middleware
 	e.Use(middleware.RequestLogger())
