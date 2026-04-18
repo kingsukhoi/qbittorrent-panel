@@ -11,3 +11,7 @@ dev:
 
 gqlGen:
 	go generate ./gqlGen.go
+
+sqlGenerate:
+	sqlc generate
+	trash dev.db && sqlite3 dev.db < schema.sql

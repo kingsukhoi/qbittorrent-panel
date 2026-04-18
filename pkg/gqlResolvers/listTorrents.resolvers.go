@@ -12,62 +12,40 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/kingsukhoi/qbitorrent-panel/pkg/database"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/gqlGenerated"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/helpers"
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
+	"github.com/kingsukhoi/qbitorrent-panel/pkg/sqlc"
 )
 
 // Torrents is the resolver for the Torrents field.
 func (r *queryResolver) Torrents(ctx context.Context, categories []string, servers []string) ([]gqlGenerated.Torrent, error) {
-	var qbClients []*qbClient.Client
+	db := database.MustGet()
+	queries := sqlc.New(db)
 
-	if len(servers) == 0 {
-		qbClients = qbClient.Registry().All()
-	} else {
-		for _, client := range servers {
-			curr, exist := qbClient.Registry().Get(client)
-			if !exist {
-				return nil, fmt.Errorf("client %s does not exist", client)
-			}
-			qbClients = append(qbClients, curr)
-		}
+	torrents, err := queries.GetTorrents(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	rtnMe := make([]gqlGenerated.Torrent, 0)
+	rtnMe := make([]gqlGenerated.Torrent, len(torrents))
 
-	for _, client := range qbClients {
-		torrents, errL := client.GetTorrents(ctx)
-		if errL != nil {
-			return nil, errL
-		}
-
-		for _, torrent := range torrents {
-			match := slices.Contains(categories, torrent.Category)
-			if !match && len(categories) > 0 {
-				continue
-			}
-
-			curr := gqlGenerated.Torrent{
-				Server:     torrent.Client.BasePath.String(),
-				Name:       torrent.Name,
-				Category:   torrent.Category,
-				Ratio:      torrent.Ratio,
-				InfoHashV1: torrent.InfohashV1,
-				Comment:    torrent.Comment,
-				RootPath:   torrent.RootPath,
-				SavePath:   torrent.SavePath,
-				SizeBytes:  torrent.Size,
-				TrackerURL: torrent.Tracker,
-				AddedOn:    torrent.AddedOn.Time().Unix(),
-				State:      torrent.State,
-			}
-			rtnMe = append(rtnMe, curr)
+	for i, t := range torrents {
+		rtnMe[i] = gqlGenerated.Torrent{
+			Server:     t.ServerUrl,
+			Name:       t.Name,
+			Category:   t.Category.String,
+			Ratio:      t.Ratio,
+			InfoHashV1: t.InfoHashV1,
+			Comment:    t.Comment,
+			RootPath:   t.Rootpath,
+			SavePath:   t.Savepath,
+			SizeBytes:  t.Sizebytes,
+			AddedOn:    t.Addedon,
+			State:      t.State,
 		}
 	}
-
-	slices.SortFunc(rtnMe, func(a, b gqlGenerated.Torrent) int {
-		return strings.Compare(a.Server, b.Server)
-	})
 
 	return rtnMe, nil
 }

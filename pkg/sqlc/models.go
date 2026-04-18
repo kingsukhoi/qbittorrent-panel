@@ -4,10 +4,60 @@
 
 package sqlc
 
+import (
+	"database/sql"
+)
+
+type Category struct {
+	Name      string
+	SavePath  string
+	ServerUrl string
+}
+
+type QbServer struct {
+	Url      string
+	LastSeen int64
+}
+
 type Torrent struct {
 	InfoHashV1  string
 	ServerUrl   string
 	Name        string
 	LastUpdated int64
 	Path        string
+	Category    sql.NullString
+	Ratio       float64
+	Comment     string
+	Rootpath    string
+	Savepath    string
+	Sizebytes   int64
+	Addedon     int64
+	State       string
+}
+
+type TorrentFile struct {
+	InfoHashV1      string
+	ServerUrl       string
+	Availability    float64
+	Name            string
+	FileIndex       int64
+	PieceRangeStart int64
+	PieceRangeEnd   int64
+	Priority        int64
+	Progress        float64
+	Size            int64
+	IsSeed          int64
+}
+
+type TrackersTorrent struct {
+	InfoHashV1    string
+	ServerUrl     string
+	Url           string
+	Tier          int64
+	Status        int64
+	NumPeers      int64
+	NumSeeds      int64
+	NumLeeches    int64
+	NumDownloaded int64
+	Msg           string
 }

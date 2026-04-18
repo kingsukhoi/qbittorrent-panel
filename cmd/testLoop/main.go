@@ -31,7 +31,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		jsonString, err := json.Marshal(torrents)
+		jsonString, err := json.MarshalIndent(torrents, "", "  ")
 		if err != nil {
 			panic(err)
 		}

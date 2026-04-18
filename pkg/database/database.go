@@ -24,6 +24,11 @@ func MustGet() *sql.DB {
 		db.SetMaxOpenConns(1)
 		instance = db
 
+		_, err = instance.Exec("PRAGMA foreign_keys = ON")
+		if err != nil {
+			panic(err)
+		}
+
 		_, err = instance.Exec(qbittorrent_panel.SQL_SCHEMA)
 		if err != nil {
 			panic(err)
