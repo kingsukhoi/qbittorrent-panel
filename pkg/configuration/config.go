@@ -4,7 +4,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/alecthomas/kong"
+	kongyaml "github.com/alecthomas/kong-yaml"
 )
 
 type Env string
@@ -15,11 +16,12 @@ const (
 )
 
 type Config struct {
-	Port         string    `yaml:"port" env-default:":8080"`
-	Endpoints    []QbLogin `json:"endpoints" yaml:"endpoints"`
-	FrontEndPath string    `yaml:"front_end_path" env:"FRONT_END_PATH" env-default:"./frontend/dist"`
-	Env          string    `yaml:"env" env-default:"development"`
+	Port         string    `yaml:"port" default:":8080"`
+	Endpoints    []QbLogin `yaml:"endpoints"`
+	FrontEndPath string    `yaml:"front_end_path" env:"FRONT_END_PATH" default:"./frontend/dist"`
+	Env          string    `yaml:"env" default:"development"`
 }
+
 type QbLogin struct {
 	BasePath string `yaml:"path"`
 	Username string `yaml:"username"`
@@ -33,16 +35,21 @@ func MustGetConfig(configFile ...string) Config {
 	once.Do(func() {
 		configSingleton = &Config{}
 
-		err := cleanenv.ReadEnv(configSingleton)
+		options := []kong.Option{
+			kong.DefaultEnvars(""),
+		}
+
+		if len(configFile) > 0 {
+			options = append(options, kong.Configuration(kongyaml.Loader, configFile[0]))
+		}
+
+		parser, err := kong.New(configSingleton, options...)
 		if err != nil {
 			panic(err)
 		}
 
-		if len(configFile) > 0 {
-			errI := cleanenv.ReadConfig(configFile[0], configSingleton)
-			if errI != nil {
-				panic(errI)
-			}
+		if _, err = parser.Parse([]string{}); err != nil {
+			panic(err)
 		}
 	})
 	return *configSingleton
