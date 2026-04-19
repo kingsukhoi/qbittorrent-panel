@@ -12,14 +12,14 @@
     "check": "biome check"
   },
   "dependencies": {
-    "@apollo/client": "^4.1.7",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-devtools": "^0.10.2",
+    "@tanstack/react-query": "^5.99.2",
     "@tanstack/react-router": "^1.168.22",
     "@tanstack/react-router-devtools": "^1.166.13",
     "@tanstack/react-table": "^8.21.3",
-    "apollo-upload-client": "^19.0.0",
     "graphql": "^16.13.2",
+    "graphql-request": "^7.4.0",
     "lucide-react": "^1.8.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

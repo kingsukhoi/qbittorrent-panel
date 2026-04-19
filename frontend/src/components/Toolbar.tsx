@@ -1,8 +1,7 @@
 import {Pause, Play, Plus, Search, Settings, Trash2} from 'lucide-react';
 import {useState} from 'react';
 import UploadTorrentModal from './UploadTorrentModal';
-import {useMutation} from "@apollo/client/react";
-import {PAUSE_TORRENTS, RESUME_TORRENTS} from "../queries";
+import {usePauseTorrents, useResumeTorrents} from "../hooks/useTorrentMutations";
 
 export default function Toolbar({searchQuery, onSearchChange, selectedTorrent}: {
     searchQuery: string;
@@ -10,38 +9,20 @@ export default function Toolbar({searchQuery, onSearchChange, selectedTorrent}: 
     selectedTorrent?: { Server: string; InfoHashV1: string } | null;
 }) {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [pauseTorrents] = useMutation(PAUSE_TORRENTS);
-    const [resumeTorrents] = useMutation(RESUME_TORRENTS);
+    const {mutate: pauseTorrents} = usePauseTorrents();
+    const {mutate: resumeTorrents} = useResumeTorrents();
 
     const handlePause = () => {
         if (!selectedTorrent) return;
         pauseTorrents({
-            variables: {
-                args: {
-                    Torrents: [
-                        {
-                            Server: selectedTorrent.Server,
-                            Hash: selectedTorrent.InfoHashV1,
-                        },
-                    ],
-                },
-            },
+            Torrents: [{Server: selectedTorrent.Server, Hash: selectedTorrent.InfoHashV1}],
         });
     };
 
     const handleResume = () => {
         if (!selectedTorrent) return;
         resumeTorrents({
-            variables: {
-                args: {
-                    Torrents: [
-                        {
-                            Server: selectedTorrent.Server,
-                            Hash: selectedTorrent.InfoHashV1,
-                        },
-                    ],
-                },
-            },
+            Torrents: [{Server: selectedTorrent.Server, Hash: selectedTorrent.InfoHashV1}],
         });
     };
 

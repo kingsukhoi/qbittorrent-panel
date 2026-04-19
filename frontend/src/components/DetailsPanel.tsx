@@ -1,8 +1,7 @@
 import {useState} from 'react';
 import {FileText, Info, List, RefreshCw} from 'lucide-react';
 import type {Torrent} from '../types';
-import {useQuery} from "@apollo/client/react";
-import {GET_TORRENT_TRACKERS} from "../queries";
+import {useTorrentTrackers} from "../hooks/useTorrentTrackers";
 
 type Tab = 'general' | 'files' | 'trackers';
 
@@ -17,10 +16,7 @@ function formatBytes(bytes: number): string {
 export default function DetailsPanel({torrent, height}: { torrent: Torrent | null; height: number }) {
     const [activeTab, setActiveTab] = useState<Tab>('general');
 
-    const {data, loading} = useQuery<{ Torrent: Torrent[] }>(GET_TORRENT_TRACKERS, {
-        variables: {infoHashV1: torrent?.InfoHashV1},
-        skip: !torrent || activeTab !== 'trackers',
-    });
+    const {data, isFetching: loading} = useTorrentTrackers(torrent?.InfoHashV1, activeTab === 'trackers');
 
     const trackers = data?.Torrent?.find((t) => t.Server === torrent?.Server)?.Trackers || [];
 

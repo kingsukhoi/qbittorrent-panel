@@ -1,6 +1,4 @@
-import {gql} from '@apollo/client';
-
-export const GET_TORRENTS = gql`
+export const GET_TORRENTS = `
     query GetTorrents($categories: [String!], $servers: [String!]) {
         Torrents(categories: $categories, servers: $servers) {
             Server
@@ -29,7 +27,7 @@ export const GET_TORRENTS = gql`
     }
 `;
 
-export const GET_TORRENT_TRACKERS = gql`
+export const GET_TORRENT_TRACKERS = `
     query GetTorrentTrackers($infoHashV1: String!) {
         Torrent(infoHashV1: $infoHashV1) {
             InfoHashV1
@@ -48,7 +46,7 @@ export const GET_TORRENT_TRACKERS = gql`
     }
 `;
 
-export const GET_CATEGORIES = gql`
+export const GET_CATEGORIES = `
     query GetCategories {
         Categories {
             Name
@@ -58,7 +56,7 @@ export const GET_CATEGORIES = gql`
     }
 `;
 
-export const PAUSE_TORRENTS = gql`
+export const PAUSE_TORRENTS = `
     mutation PauseTorrents($args: PauseTorrentsArgs!) {
         pauseTorrents(args: $args) {
             Success
@@ -66,7 +64,7 @@ export const PAUSE_TORRENTS = gql`
     }
 `;
 
-export const RESUME_TORRENTS = gql`
+export const RESUME_TORRENTS = `
     mutation ResumeTorrents($args: ResumeTorrentsArgs!) {
         resumeTorrents(args: $args) {
             Success

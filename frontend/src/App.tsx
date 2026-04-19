@@ -1,42 +1,39 @@
-import {ApolloProvider, useQuery} from '@apollo/client/react';
-import {apolloClient} from './lib/apollo';
+import {QueryClientProvider} from '@tanstack/react-query';
+import {queryClient} from './lib/queryClient';
 import {useEffect, useMemo, useState} from 'react';
 import Toolbar from './components/Toolbar';
 import Sidebar from './components/Sidebar';
 import TorrentTable from './components/TorrentTable';
 import DetailsPanel from './components/DetailsPanel';
-import {GET_TORRENTS} from './queries';
+import {useTorrents} from './hooks/useTorrents';
 import type {Torrent} from './types';
 
 
 function QBittorrentPanel() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedServer, setSelectedServer] = useState<string | null>(null);
+    const [selectedTracker, setSelectedTracker] = useState<string | null>(null);
     const [selectedTorrentHash, setSelectedTorrentHash] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [sidebarWidth, setSidebarWidth] = useState(208); // 52 * 4 = 208px (w-52 in rem)
-    const [detailsHeight, setDetailsHeight] = useState(256); // 64 * 4 = 256px (h-64 in rem)
+    const [sidebarWidth, setSidebarWidth] = useState(208);
+    const [detailsHeight, setDetailsHeight] = useState(256);
     const [isResizingSidebar, setIsResizingSidebar] = useState(false);
     const [isResizingDetails, setIsResizingDetails] = useState(false);
 
-    // Fetch all torrents to keep selected torrent fresh
-    const {data: torrentsData} = useQuery<{ Torrents: Torrent[] }>(GET_TORRENTS, {
-        variables: {
-            categories: selectedCategory ? [selectedCategory] : undefined,
-        },
-        pollInterval: 2000, // Refresh every 2 seconds
+    const {data: torrentsData} = useTorrents({
+        categories: selectedCategory ? [selectedCategory] : undefined,
+        servers: selectedServer ? [selectedServer] : undefined,
     });
 
-    // Find the currently selected torrent from fresh data
     const selectedTorrent = useMemo(() => {
         if (!selectedTorrentHash || !torrentsData?.Torrents) {
             return null;
         }
         return torrentsData.Torrents.find(
-            (torrent) => torrent.InfoHashV1 === selectedTorrentHash
+            (torrent: Torrent) => torrent.InfoHashV1 === selectedTorrentHash
         ) ?? null;
     }, [selectedTorrentHash, torrentsData?.Torrents]);
 
-    // Add and remove event listeners
     useEffect(() => {
         const handleMouseMove = (e: globalThis.MouseEvent) => {
             if (isResizingSidebar) {
@@ -75,6 +72,10 @@ function QBittorrentPanel() {
                 <Sidebar
                     selectedCategory={selectedCategory}
                     onCategorySelect={setSelectedCategory}
+                    selectedServer={selectedServer}
+                    onServerSelect={setSelectedServer}
+                    selectedTracker={selectedTracker}
+                    onTrackerSelect={setSelectedTracker}
                     width={sidebarWidth}
                     searchQuery={searchQuery}
                 />
@@ -88,6 +89,8 @@ function QBittorrentPanel() {
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <TorrentTable
                         selectedCategory={selectedCategory}
+                        selectedServer={selectedServer}
+                        selectedTracker={selectedTracker}
                         selectedTorrentHash={selectedTorrentHash}
                         onTorrentSelect={(hash) => setSelectedTorrentHash(hash)}
                         searchQuery={searchQuery}
@@ -108,9 +111,9 @@ function QBittorrentPanel() {
 
 function App() {
     return (
-        <ApolloProvider client={apolloClient}>
+        <QueryClientProvider client={queryClient}>
             <QBittorrentPanel/>
-        </ApolloProvider>
+        </QueryClientProvider>
     );
 }
 

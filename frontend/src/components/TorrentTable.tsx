@@ -8,9 +8,8 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
-import {useQuery} from "@apollo/client/react";
+import {useTorrents} from "../hooks/useTorrents";
 import {AlertCircle, ArrowDown, ArrowUp, Clock, HelpCircle, Pause, RefreshCw,} from "lucide-react";
-import {GET_TORRENTS} from "../queries";
 import type {Torrent} from "../types";
 
 function StatusIcon({state}: { state: string }) {
@@ -165,24 +164,30 @@ const columns = [
 
 export default function TorrentTable({
 										 selectedCategory,
+                                         selectedServer,
+                                         selectedTracker,
 										 selectedTorrentHash,
 										 onTorrentSelect,
 										 searchQuery,
 									 }: {
 	selectedCategory: string | null;
+    selectedServer: string | null;
+    selectedTracker: string | null;
 	selectedTorrentHash: string | null;
 	onTorrentSelect: (hash: string) => void;
 	searchQuery: string;
 }) {
-	const {data} = useQuery<{ Torrents: Torrent[] }>(GET_TORRENTS, {
-		variables: {
-			categories: selectedCategory ? [selectedCategory] : undefined,
-		},
-		pollInterval: 2000, // Refresh every 2 seconds
+    const {data} = useTorrents({
+        categories: selectedCategory ? [selectedCategory] : undefined,
+        servers: selectedServer ? [selectedServer] : undefined,
 	});
 
 	const torrents = useMemo(() => {
-		const allTorrents = data?.Torrents ?? [];
+        let allTorrents = data?.Torrents ?? [];
+
+        if (selectedTracker) {
+            allTorrents = allTorrents.filter((t) => t.TrackerUrl === selectedTracker);
+        }
 
 		if (!searchQuery.trim()) {
 			return allTorrents;
@@ -197,7 +202,7 @@ export default function TorrentTable({
 				torrent.Server.toLowerCase().includes(query) ||
 				torrent.SavePath.toLowerCase().includes(query),
 		);
-	}, [data?.Torrents, searchQuery]);
+    }, [data?.Torrents, searchQuery, selectedTracker]);
 
 	const [sorting, setSorting] = useState<SortingState>([
 		{id: "AddedOn", desc: true},

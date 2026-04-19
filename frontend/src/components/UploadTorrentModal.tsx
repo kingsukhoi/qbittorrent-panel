@@ -1,8 +1,6 @@
 import {Check, ChevronDown, Search, Upload, X} from "lucide-react";
 import {useEffect, useId, useRef, useState} from "react";
-import {useQuery} from "@apollo/client/react";
-import {GET_CATEGORIES} from "../queries";
-import type {Category} from "../types";
+import {useCategories} from "../hooks/useCategories";
 import {getApiUrl} from "../lib/api";
 
 interface UploadTorrentModalProps {
@@ -24,9 +22,7 @@ export default function UploadTorrentModal({
     const searchInputRef = useRef<HTMLInputElement>(null);
     const categoryId = useId();
 
-    const {data: categoriesData} = useQuery<{ Categories: Category[] }>(
-        GET_CATEGORIES,
-    );
+    const {data: categoriesData} = useCategories();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
