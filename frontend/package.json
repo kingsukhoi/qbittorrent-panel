@@ -12,6 +12,7 @@
     "check": "biome check"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.10",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-devtools": "^0.10.2",
     "@tanstack/react-query": "^5.99.2",

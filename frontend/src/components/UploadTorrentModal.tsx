@@ -1,3 +1,4 @@
+import {Dialog, DialogPanel, DialogTitle} from "@headlessui/react";
 import {Check, ChevronDown, Search, Upload, X} from "lucide-react";
 import {useEffect, useId, useRef, useState} from "react";
 import {useCategories} from "../hooks/useCategories";
@@ -142,17 +143,16 @@ export default function UploadTorrentModal({
         fileInputRef.current?.click();
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div
+        <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+            <div className="fixed inset-0 bg-black/50" aria-hidden="true"/>
+            <div className="fixed inset-0 flex items-center justify-center">
+                <DialogPanel
                 className="bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg w-full max-w-md shadow-xl">
-                {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-[var(--qbt-border)]">
-                    <h2 className="text-lg font-semibold text-[var(--qbt-text-primary)]">
+                    <DialogTitle className="text-lg font-semibold text-[var(--qbt-text-primary)]">
                         Upload Torrent
-                    </h2>
+                    </DialogTitle>
                     <button
                         type="button"
                         onClick={onClose}
@@ -355,7 +355,8 @@ export default function UploadTorrentModal({
                         </button>
                     </div>
                 </form>
+                </DialogPanel>
             </div>
-        </div>
+        </Dialog>
     );
 }

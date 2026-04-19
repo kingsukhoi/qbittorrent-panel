@@ -42,6 +42,14 @@ func NewEchoHandler(gqlHandler *handler.Server) *echo.Echo {
 	}
 
 	if fePathExists {
+		e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+			return func(c *echo.Context) error {
+				if c.Request().URL.Path == "/" || c.Request().URL.Path == "/index.html" {
+					c.Response().Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+				}
+				return next(c)
+			}
+		})
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:  config.FrontEndPath,
 			Index: "index.html",

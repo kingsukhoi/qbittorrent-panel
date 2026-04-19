@@ -1,3 +1,4 @@
+import {Dialog, DialogPanel, DialogTitle} from '@headlessui/react';
 import {ChevronDown, Search, X} from 'lucide-react';
 import {useEffect, useRef, useState} from 'react';
 import {useCreateCategory} from '../hooks/useTorrentMutations';
@@ -61,14 +62,15 @@ export default function CreateCategoryModal({isOpen, onClose}: CreateCategoryMod
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div
-                className="bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg w-full max-w-sm shadow-xl">
+        <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+            <div className="fixed inset-0 bg-black/50" aria-hidden="true"/>
+            <div className="fixed inset-0 flex items-center justify-center">
+                <DialogPanel
+                    className="bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg w-full max-w-sm shadow-xl">
                 <div className="flex items-center justify-between p-4 border-b border-[var(--qbt-border)]">
-                    <h2 className="text-lg font-semibold text-[var(--qbt-text-primary)]">Create Category</h2>
+                    <DialogTitle className="text-lg font-semibold text-[var(--qbt-text-primary)]">Create
+                        Category</DialogTitle>
                     <button
                         type="button"
                         onClick={onClose}
@@ -189,7 +191,8 @@ export default function CreateCategoryModal({isOpen, onClose}: CreateCategoryMod
                         </button>
                     </div>
                 </form>
+                </DialogPanel>
             </div>
-        </div>
+        </Dialog>
     );
 }
