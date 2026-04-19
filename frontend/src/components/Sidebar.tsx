@@ -135,10 +135,10 @@ export default function Sidebar({
     const hasActiveFilters = selectedCategory !== null || selectedServer !== null || selectedTracker !== null;
 
     return (
-        <div className="bg-[var(--qbt-bg-secondary)] border-r border-[var(--qbt-border)] overflow-y-auto"
+        <div className="bg-[var(--qbt-bg-secondary)] border-r border-[var(--qbt-border)] flex flex-col"
              style={{width: `${width}px`}}>
-            <div className="p-2">
-                {hasActiveFilters && (
+            {hasActiveFilters && (
+                <div className="px-2 pt-2 flex-shrink-0">
                     <button
                         type="button"
                         onClick={() => {
@@ -146,12 +146,14 @@ export default function Sidebar({
                             onServerSelect(null);
                             onTrackerSelect(null);
                         }}
-                        className="w-full flex items-center gap-2 px-2 py-1.5 mb-1 rounded text-sm text-[var(--qbt-text-secondary)] hover:bg-[var(--qbt-bg-tertiary)] hover:text-[var(--qbt-text-primary)] transition-colors"
+                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-[var(--qbt-text-secondary)] hover:bg-[var(--qbt-bg-tertiary)] hover:text-[var(--qbt-text-primary)] transition-colors"
                     >
                         <span>✕</span>
                         <span>Clear filters</span>
                     </button>
-                )}
+                </div>
+            )}
+            <div className="p-2 overflow-y-auto flex-1">
                 <SectionHeader
                     label="CATEGORIES"
                     collapsed={categoriesCollapsed}
@@ -238,3 +240,4 @@ export default function Sidebar({
         </div>
     );
 }
+
