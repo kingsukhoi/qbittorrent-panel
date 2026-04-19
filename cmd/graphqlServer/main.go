@@ -36,7 +36,8 @@ func main() {
 	// Create Echo instance
 	e := routers.NewEchoHandler(h)
 
-	err := e.Start(cfg.Port)
+	err := e.Start("0.0.0.0:" + cfg.Port)
+
 	if err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
