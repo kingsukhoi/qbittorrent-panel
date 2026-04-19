@@ -1,5 +1,5 @@
 export function getApiUrl(path: string = ""): string {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || "/";
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
     // Remove trailing slash from baseUrl and leading slash from path to avoid double slashes
     const normalizedBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
