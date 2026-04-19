@@ -56,6 +56,14 @@ export const GET_CATEGORIES = `
     }
 `;
 
+export const CREATE_CATEGORY = `
+    mutation CreateCategory($args: CreateCategoryArgs!) {
+        createCategory(args: $args) {
+            Success
+        }
+    }
+`;
+
 export const PAUSE_TORRENTS = `
     mutation PauseTorrents($args: PauseTorrentsArgs!) {
         pauseTorrents(args: $args) {

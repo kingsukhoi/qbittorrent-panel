@@ -1,6 +1,6 @@
-import {useMutation} from '@tanstack/react-query';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {graphqlClient} from '../lib/graphqlClient';
-import {PAUSE_TORRENTS, RESUME_TORRENTS} from '../queries';
+import {CREATE_CATEGORY, PAUSE_TORRENTS, RESUME_TORRENTS} from '../queries';
 
 interface TorrentRef {
     Server: string;
@@ -9,6 +9,23 @@ interface TorrentRef {
 
 interface MutationArgs {
     Torrents: TorrentRef[];
+}
+
+interface CreateCategoryArgs {
+    Name: string;
+    Path: string;
+    Server: string;
+}
+
+export function useCreateCategory() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (args: CreateCategoryArgs) =>
+            graphqlClient.request(CREATE_CATEGORY, {args}),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ['categories']});
+        },
+    });
 }
 
 export function usePauseTorrents() {

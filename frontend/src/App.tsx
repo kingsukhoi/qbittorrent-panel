@@ -5,6 +5,7 @@ import Toolbar from './components/Toolbar';
 import Sidebar from './components/Sidebar';
 import TorrentTable from './components/TorrentTable';
 import DetailsPanel from './components/DetailsPanel';
+import CreateCategoryModal from './components/CreateCategoryModal';
 import {useTorrents} from './hooks/useTorrents';
 import type {Torrent} from './types';
 
@@ -19,6 +20,7 @@ function QBittorrentPanel() {
     const [detailsHeight, setDetailsHeight] = useState(256);
     const [isResizingSidebar, setIsResizingSidebar] = useState(false);
     const [isResizingDetails, setIsResizingDetails] = useState(false);
+    const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
 
     const {data: torrentsData} = useTorrents({
         categories: selectedCategory ? [selectedCategory] : undefined,
@@ -67,6 +69,7 @@ function QBittorrentPanel() {
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
                 selectedTorrent={selectedTorrent}
+                onAddCategory={() => setIsCreateCategoryOpen(true)}
             />
             <div className="flex-1 flex overflow-hidden">
                 <Sidebar
@@ -105,6 +108,10 @@ function QBittorrentPanel() {
                     <DetailsPanel torrent={selectedTorrent} height={detailsHeight}/>
                 </div>
             </div>
+            <CreateCategoryModal
+                isOpen={isCreateCategoryOpen}
+                onClose={() => setIsCreateCategoryOpen(false)}
+            />
         </div>
     );
 }

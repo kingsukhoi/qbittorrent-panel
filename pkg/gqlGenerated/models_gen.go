@@ -9,8 +9,9 @@ type Category struct {
 }
 
 type CreateCategoryArgs struct {
-	Name string `json:"Name"`
-	Path string `json:"Path"`
+	Name   string `json:"Name"`
+	Path   string `json:"Path"`
+	Server string `json:"Server"`
 }
 
 type CreateCategoryResult struct {

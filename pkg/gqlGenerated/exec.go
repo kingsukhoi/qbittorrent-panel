@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"sync"
 	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -21,20 +20,10 @@ import (
 
 // NewExecutableSchema creates an ExecutableSchema from the ResolverRoot interface.
 func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
-	return &executableSchema{
-		schema:     cfg.Schema,
-		resolvers:  cfg.Resolvers,
-		directives: cfg.Directives,
-		complexity: cfg.Complexity,
-	}
+	return &executableSchema{SchemaData: cfg.Schema, Resolvers: cfg.Resolvers, Directives: cfg.Directives, ComplexityRoot: cfg.Complexity}
 }
 
-type Config struct {
-	Schema     *ast.Schema
-	Resolvers  ResolverRoot
-	Directives DirectiveRoot
-	Complexity ComplexityRoot
-}
+type Config = graphql.Config[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 type ResolverRoot interface {
 	Mutation() MutationResolver
@@ -138,109 +127,104 @@ type TorrentResolver interface {
 	Files(ctx context.Context, obj *Torrent) ([]File, error)
 }
 
-type executableSchema struct {
-	schema     *ast.Schema
-	resolvers  ResolverRoot
-	directives DirectiveRoot
-	complexity ComplexityRoot
-}
+type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
 
 func (e *executableSchema) Schema() *ast.Schema {
-	if e.schema != nil {
-		return e.schema
+	if e.SchemaData != nil {
+		return e.SchemaData
 	}
 	return parsedSchema
 }
 
 func (e *executableSchema) Complexity(ctx context.Context, typeName, field string, childComplexity int, rawArgs map[string]any) (int, bool) {
-	ec := executionContext{nil, e, 0, 0, nil}
+	ec := newExecutionContext(nil, e, nil)
 	_ = ec
 	switch typeName + "." + field {
 
 	case "Category.Name":
-		if e.complexity.Category.Name == nil {
+		if e.ComplexityRoot.Category.Name == nil {
 			break
 		}
 
-		return e.complexity.Category.Name(childComplexity), true
+		return e.ComplexityRoot.Category.Name(childComplexity), true
 	case "Category.Path":
-		if e.complexity.Category.Path == nil {
+		if e.ComplexityRoot.Category.Path == nil {
 			break
 		}
 
-		return e.complexity.Category.Path(childComplexity), true
+		return e.ComplexityRoot.Category.Path(childComplexity), true
 	case "Category.Servers":
-		if e.complexity.Category.Servers == nil {
+		if e.ComplexityRoot.Category.Servers == nil {
 			break
 		}
 
-		return e.complexity.Category.Servers(childComplexity), true
+		return e.ComplexityRoot.Category.Servers(childComplexity), true
 
 	case "CreateCategoryResult.Success":
-		if e.complexity.CreateCategoryResult.Success == nil {
+		if e.ComplexityRoot.CreateCategoryResult.Success == nil {
 			break
 		}
 
-		return e.complexity.CreateCategoryResult.Success(childComplexity), true
+		return e.ComplexityRoot.CreateCategoryResult.Success(childComplexity), true
 
 	case "DeleteTorrentsResults.Success":
-		if e.complexity.DeleteTorrentsResults.Success == nil {
+		if e.ComplexityRoot.DeleteTorrentsResults.Success == nil {
 			break
 		}
 
-		return e.complexity.DeleteTorrentsResults.Success(childComplexity), true
+		return e.ComplexityRoot.DeleteTorrentsResults.Success(childComplexity), true
 
 	case "File.Availability":
-		if e.complexity.File.Availability == nil {
+		if e.ComplexityRoot.File.Availability == nil {
 			break
 		}
 
-		return e.complexity.File.Availability(childComplexity), true
+		return e.ComplexityRoot.File.Availability(childComplexity), true
 	case "File.Index":
-		if e.complexity.File.Index == nil {
+		if e.ComplexityRoot.File.Index == nil {
 			break
 		}
 
-		return e.complexity.File.Index(childComplexity), true
+		return e.ComplexityRoot.File.Index(childComplexity), true
 	case "File.IsSeed":
-		if e.complexity.File.IsSeed == nil {
+		if e.ComplexityRoot.File.IsSeed == nil {
 			break
 		}
 
-		return e.complexity.File.IsSeed(childComplexity), true
+		return e.ComplexityRoot.File.IsSeed(childComplexity), true
 	case "File.Name":
-		if e.complexity.File.Name == nil {
+		if e.ComplexityRoot.File.Name == nil {
 			break
 		}
 
-		return e.complexity.File.Name(childComplexity), true
+		return e.ComplexityRoot.File.Name(childComplexity), true
 	case "File.PieceRange":
-		if e.complexity.File.PieceRange == nil {
+		if e.ComplexityRoot.File.PieceRange == nil {
 			break
 		}
 
-		return e.complexity.File.PieceRange(childComplexity), true
+		return e.ComplexityRoot.File.PieceRange(childComplexity), true
 	case "File.Priority":
-		if e.complexity.File.Priority == nil {
+		if e.ComplexityRoot.File.Priority == nil {
 			break
 		}
 
-		return e.complexity.File.Priority(childComplexity), true
+		return e.ComplexityRoot.File.Priority(childComplexity), true
 	case "File.Progress":
-		if e.complexity.File.Progress == nil {
+		if e.ComplexityRoot.File.Progress == nil {
 			break
 		}
 
-		return e.complexity.File.Progress(childComplexity), true
+		return e.ComplexityRoot.File.Progress(childComplexity), true
 	case "File.SizeBytes":
-		if e.complexity.File.SizeBytes == nil {
+		if e.ComplexityRoot.File.SizeBytes == nil {
 			break
 		}
 
-		return e.complexity.File.SizeBytes(childComplexity), true
+		return e.ComplexityRoot.File.SizeBytes(childComplexity), true
 
 	case "Mutation.createCategory":
-		if e.complexity.Mutation.CreateCategory == nil {
+		if e.ComplexityRoot.Mutation.CreateCategory == nil {
 			break
 		}
 
@@ -249,9 +233,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateCategory(childComplexity, args["args"].(CreateCategoryArgs)), true
+		return e.ComplexityRoot.Mutation.CreateCategory(childComplexity, args["args"].(CreateCategoryArgs)), true
 	case "Mutation.deleteTorrents":
-		if e.complexity.Mutation.DeleteTorrents == nil {
+		if e.ComplexityRoot.Mutation.DeleteTorrents == nil {
 			break
 		}
 
@@ -260,9 +244,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteTorrents(childComplexity, args["args"].(DeleteTorrentsArgs)), true
+		return e.ComplexityRoot.Mutation.DeleteTorrents(childComplexity, args["args"].(DeleteTorrentsArgs)), true
 	case "Mutation.pauseTorrents":
-		if e.complexity.Mutation.PauseTorrents == nil {
+		if e.ComplexityRoot.Mutation.PauseTorrents == nil {
 			break
 		}
 
@@ -271,9 +255,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.PauseTorrents(childComplexity, args["args"].(PauseTorrentsArgs)), true
+		return e.ComplexityRoot.Mutation.PauseTorrents(childComplexity, args["args"].(PauseTorrentsArgs)), true
 	case "Mutation.resumeTorrents":
-		if e.complexity.Mutation.ResumeTorrents == nil {
+		if e.ComplexityRoot.Mutation.ResumeTorrents == nil {
 			break
 		}
 
@@ -282,23 +266,24 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ResumeTorrents(childComplexity, args["args"].(ResumeTorrentsArgs)), true
+		return e.ComplexityRoot.Mutation.ResumeTorrents(childComplexity, args["args"].(ResumeTorrentsArgs)), true
 
 	case "PauseTorrentsResults.Success":
-		if e.complexity.PauseTorrentsResults.Success == nil {
+		if e.ComplexityRoot.PauseTorrentsResults.Success == nil {
 			break
 		}
 
-		return e.complexity.PauseTorrentsResults.Success(childComplexity), true
+		return e.ComplexityRoot.PauseTorrentsResults.Success(childComplexity), true
 
 	case "Query.Categories":
-		if e.complexity.Query.Categories == nil {
+		if e.ComplexityRoot.Query.Categories == nil {
 			break
 		}
 
-		return e.complexity.Query.Categories(childComplexity), true
+		return e.ComplexityRoot.Query.Categories(childComplexity), true
+
 	case "Query.Torrent":
-		if e.complexity.Query.Torrent == nil {
+		if e.ComplexityRoot.Query.Torrent == nil {
 			break
 		}
 
@@ -307,9 +292,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Torrent(childComplexity, args["infoHashV1"].(string)), true
+		return e.ComplexityRoot.Query.Torrent(childComplexity, args["infoHashV1"].(string)), true
 	case "Query.Torrents":
-		if e.complexity.Query.Torrents == nil {
+		if e.ComplexityRoot.Query.Torrents == nil {
 			break
 		}
 
@@ -318,148 +303,148 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Query.Torrents(childComplexity, args["categories"].([]string), args["servers"].([]string)), true
+		return e.ComplexityRoot.Query.Torrents(childComplexity, args["categories"].([]string), args["servers"].([]string)), true
 
 	case "ResumeTorrentsResults.Success":
-		if e.complexity.ResumeTorrentsResults.Success == nil {
+		if e.ComplexityRoot.ResumeTorrentsResults.Success == nil {
 			break
 		}
 
-		return e.complexity.ResumeTorrentsResults.Success(childComplexity), true
+		return e.ComplexityRoot.ResumeTorrentsResults.Success(childComplexity), true
 
 	case "Torrent.AddedOn":
-		if e.complexity.Torrent.AddedOn == nil {
+		if e.ComplexityRoot.Torrent.AddedOn == nil {
 			break
 		}
 
-		return e.complexity.Torrent.AddedOn(childComplexity), true
+		return e.ComplexityRoot.Torrent.AddedOn(childComplexity), true
 	case "Torrent.Category":
-		if e.complexity.Torrent.Category == nil {
+		if e.ComplexityRoot.Torrent.Category == nil {
 			break
 		}
 
-		return e.complexity.Torrent.Category(childComplexity), true
+		return e.ComplexityRoot.Torrent.Category(childComplexity), true
 	case "Torrent.Comment":
-		if e.complexity.Torrent.Comment == nil {
+		if e.ComplexityRoot.Torrent.Comment == nil {
 			break
 		}
 
-		return e.complexity.Torrent.Comment(childComplexity), true
+		return e.ComplexityRoot.Torrent.Comment(childComplexity), true
 	case "Torrent.Files":
-		if e.complexity.Torrent.Files == nil {
+		if e.ComplexityRoot.Torrent.Files == nil {
 			break
 		}
 
-		return e.complexity.Torrent.Files(childComplexity), true
+		return e.ComplexityRoot.Torrent.Files(childComplexity), true
 	case "Torrent.InfoHashV1":
-		if e.complexity.Torrent.InfoHashV1 == nil {
+		if e.ComplexityRoot.Torrent.InfoHashV1 == nil {
 			break
 		}
 
-		return e.complexity.Torrent.InfoHashV1(childComplexity), true
+		return e.ComplexityRoot.Torrent.InfoHashV1(childComplexity), true
 	case "Torrent.Name":
-		if e.complexity.Torrent.Name == nil {
+		if e.ComplexityRoot.Torrent.Name == nil {
 			break
 		}
 
-		return e.complexity.Torrent.Name(childComplexity), true
+		return e.ComplexityRoot.Torrent.Name(childComplexity), true
 	case "Torrent.Ratio":
-		if e.complexity.Torrent.Ratio == nil {
+		if e.ComplexityRoot.Torrent.Ratio == nil {
 			break
 		}
 
-		return e.complexity.Torrent.Ratio(childComplexity), true
+		return e.ComplexityRoot.Torrent.Ratio(childComplexity), true
 	case "Torrent.RootPath":
-		if e.complexity.Torrent.RootPath == nil {
+		if e.ComplexityRoot.Torrent.RootPath == nil {
 			break
 		}
 
-		return e.complexity.Torrent.RootPath(childComplexity), true
+		return e.ComplexityRoot.Torrent.RootPath(childComplexity), true
 	case "Torrent.SavePath":
-		if e.complexity.Torrent.SavePath == nil {
+		if e.ComplexityRoot.Torrent.SavePath == nil {
 			break
 		}
 
-		return e.complexity.Torrent.SavePath(childComplexity), true
+		return e.ComplexityRoot.Torrent.SavePath(childComplexity), true
 	case "Torrent.Server":
-		if e.complexity.Torrent.Server == nil {
+		if e.ComplexityRoot.Torrent.Server == nil {
 			break
 		}
 
-		return e.complexity.Torrent.Server(childComplexity), true
+		return e.ComplexityRoot.Torrent.Server(childComplexity), true
 	case "Torrent.SizeBytes":
-		if e.complexity.Torrent.SizeBytes == nil {
+		if e.ComplexityRoot.Torrent.SizeBytes == nil {
 			break
 		}
 
-		return e.complexity.Torrent.SizeBytes(childComplexity), true
+		return e.ComplexityRoot.Torrent.SizeBytes(childComplexity), true
 	case "Torrent.State":
-		if e.complexity.Torrent.State == nil {
+		if e.ComplexityRoot.Torrent.State == nil {
 			break
 		}
 
-		return e.complexity.Torrent.State(childComplexity), true
+		return e.ComplexityRoot.Torrent.State(childComplexity), true
 	case "Torrent.TrackerUrl":
-		if e.complexity.Torrent.TrackerURL == nil {
+		if e.ComplexityRoot.Torrent.TrackerURL == nil {
 			break
 		}
 
-		return e.complexity.Torrent.TrackerURL(childComplexity), true
+		return e.ComplexityRoot.Torrent.TrackerURL(childComplexity), true
 	case "Torrent.Trackers":
-		if e.complexity.Torrent.Trackers == nil {
+		if e.ComplexityRoot.Torrent.Trackers == nil {
 			break
 		}
 
-		return e.complexity.Torrent.Trackers(childComplexity), true
+		return e.ComplexityRoot.Torrent.Trackers(childComplexity), true
 
 	case "Tracker.Leeches":
-		if e.complexity.Tracker.Leeches == nil {
+		if e.ComplexityRoot.Tracker.Leeches == nil {
 			break
 		}
 
-		return e.complexity.Tracker.Leeches(childComplexity), true
+		return e.ComplexityRoot.Tracker.Leeches(childComplexity), true
 	case "Tracker.Message":
-		if e.complexity.Tracker.Message == nil {
+		if e.ComplexityRoot.Tracker.Message == nil {
 			break
 		}
 
-		return e.complexity.Tracker.Message(childComplexity), true
+		return e.ComplexityRoot.Tracker.Message(childComplexity), true
 	case "Tracker.Peers":
-		if e.complexity.Tracker.Peers == nil {
+		if e.ComplexityRoot.Tracker.Peers == nil {
 			break
 		}
 
-		return e.complexity.Tracker.Peers(childComplexity), true
+		return e.ComplexityRoot.Tracker.Peers(childComplexity), true
 	case "Tracker.Seeds":
-		if e.complexity.Tracker.Seeds == nil {
+		if e.ComplexityRoot.Tracker.Seeds == nil {
 			break
 		}
 
-		return e.complexity.Tracker.Seeds(childComplexity), true
+		return e.ComplexityRoot.Tracker.Seeds(childComplexity), true
 	case "Tracker.Status":
-		if e.complexity.Tracker.Status == nil {
+		if e.ComplexityRoot.Tracker.Status == nil {
 			break
 		}
 
-		return e.complexity.Tracker.Status(childComplexity), true
+		return e.ComplexityRoot.Tracker.Status(childComplexity), true
 	case "Tracker.Tier":
-		if e.complexity.Tracker.Tier == nil {
+		if e.ComplexityRoot.Tracker.Tier == nil {
 			break
 		}
 
-		return e.complexity.Tracker.Tier(childComplexity), true
+		return e.ComplexityRoot.Tracker.Tier(childComplexity), true
 	case "Tracker.TimesDownloaded":
-		if e.complexity.Tracker.TimesDownloaded == nil {
+		if e.ComplexityRoot.Tracker.TimesDownloaded == nil {
 			break
 		}
 
-		return e.complexity.Tracker.TimesDownloaded(childComplexity), true
+		return e.ComplexityRoot.Tracker.TimesDownloaded(childComplexity), true
 	case "Tracker.Url":
-		if e.complexity.Tracker.URL == nil {
+		if e.ComplexityRoot.Tracker.URL == nil {
 			break
 		}
 
-		return e.complexity.Tracker.URL(childComplexity), true
+		return e.ComplexityRoot.Tracker.URL(childComplexity), true
 
 	}
 	return 0, false
@@ -467,7 +452,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
-	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
+	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateCategoryArgs,
 		ec.unmarshalInputDeleteTorrentInfo,
@@ -489,9 +474,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 				ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
 				data = ec._Query(ctx, opCtx.Operation.SelectionSet)
 			} else {
-				if atomic.LoadInt32(&ec.pendingDeferred) > 0 {
-					result := <-ec.deferredResults
-					atomic.AddInt32(&ec.pendingDeferred, -1)
+				if atomic.LoadInt32(&ec.PendingDeferred) > 0 {
+					result := <-ec.DeferredResults
+					atomic.AddInt32(&ec.PendingDeferred, -1)
 					data = result.Result
 					response.Path = result.Path
 					response.Label = result.Label
@@ -503,8 +488,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			var buf bytes.Buffer
 			data.MarshalGQL(&buf)
 			response.Data = buf.Bytes()
-			if atomic.LoadInt32(&ec.deferred) > 0 {
-				hasNext := atomic.LoadInt32(&ec.pendingDeferred) > 0
+			if atomic.LoadInt32(&ec.Deferred) > 0 {
+				hasNext := atomic.LoadInt32(&ec.PendingDeferred) > 0
 				response.HasNext = &hasNext
 			}
 
@@ -532,44 +517,22 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 }
 
 type executionContext struct {
-	*graphql.OperationContext
-	*executableSchema
-	deferred        int32
-	pendingDeferred int32
-	deferredResults chan graphql.DeferredResult
+	*graphql.ExecutionContextState[ResolverRoot, DirectiveRoot, ComplexityRoot]
 }
 
-func (ec *executionContext) processDeferredGroup(dg graphql.DeferredGroup) {
-	atomic.AddInt32(&ec.pendingDeferred, 1)
-	go func() {
-		ctx := graphql.WithFreshResponseContext(dg.Context)
-		dg.FieldSet.Dispatch(ctx)
-		ds := graphql.DeferredResult{
-			Path:   dg.Path,
-			Label:  dg.Label,
-			Result: dg.FieldSet,
-			Errors: graphql.GetErrors(ctx),
-		}
-		// null fields should bubble up
-		if dg.FieldSet.Invalids > 0 {
-			ds.Result = graphql.Null
-		}
-		ec.deferredResults <- ds
-	}()
-}
-
-func (ec *executionContext) introspectSchema() (*introspection.Schema, error) {
-	if ec.DisableIntrospection {
-		return nil, errors.New("introspection disabled")
+func newExecutionContext(
+	opCtx *graphql.OperationContext,
+	execSchema *executableSchema,
+	deferredResults chan graphql.DeferredResult,
+) executionContext {
+	return executionContext{
+		ExecutionContextState: graphql.NewExecutionContextState[ResolverRoot, DirectiveRoot, ComplexityRoot](
+			opCtx,
+			(*graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot])(execSchema),
+			parsedSchema,
+			deferredResults,
+		),
 	}
-	return introspection.WrapSchema(ec.Schema()), nil
-}
-
-func (ec *executionContext) introspectType(name string) (*introspection.Type, error) {
-	if ec.DisableIntrospection {
-		return nil, errors.New("introspection disabled")
-	}
-	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
 var sources = []*ast.Source{
@@ -628,6 +591,7 @@ type Query {
 	{Name: "../../graph/updateTorrents.graphqls", Input: `input CreateCategoryArgs {
     Name: String!
     Path: String!
+    Server: String!
 }
 
 type CreateCategoryResult{
@@ -1206,7 +1170,7 @@ func (ec *executionContext) _Mutation_createCategory(ctx context.Context, field 
 		ec.fieldContext_Mutation_createCategory,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().CreateCategory(ctx, fc.Args["args"].(CreateCategoryArgs))
+			return ec.Resolvers.Mutation().CreateCategory(ctx, fc.Args["args"].(CreateCategoryArgs))
 		},
 		nil,
 		ec.marshalNCreateCategoryResult2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCreateCategoryResult,
@@ -1251,7 +1215,7 @@ func (ec *executionContext) _Mutation_pauseTorrents(ctx context.Context, field g
 		ec.fieldContext_Mutation_pauseTorrents,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().PauseTorrents(ctx, fc.Args["args"].(PauseTorrentsArgs))
+			return ec.Resolvers.Mutation().PauseTorrents(ctx, fc.Args["args"].(PauseTorrentsArgs))
 		},
 		nil,
 		ec.marshalNPauseTorrentsResults2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentsResults,
@@ -1296,7 +1260,7 @@ func (ec *executionContext) _Mutation_resumeTorrents(ctx context.Context, field 
 		ec.fieldContext_Mutation_resumeTorrents,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().ResumeTorrents(ctx, fc.Args["args"].(ResumeTorrentsArgs))
+			return ec.Resolvers.Mutation().ResumeTorrents(ctx, fc.Args["args"].(ResumeTorrentsArgs))
 		},
 		nil,
 		ec.marshalNResumeTorrentsResults2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐResumeTorrentsResults,
@@ -1341,7 +1305,7 @@ func (ec *executionContext) _Mutation_deleteTorrents(ctx context.Context, field 
 		ec.fieldContext_Mutation_deleteTorrents,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Mutation().DeleteTorrents(ctx, fc.Args["args"].(DeleteTorrentsArgs))
+			return ec.Resolvers.Mutation().DeleteTorrents(ctx, fc.Args["args"].(DeleteTorrentsArgs))
 		},
 		nil,
 		ec.marshalNDeleteTorrentsResults2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentsResults,
@@ -1415,7 +1379,7 @@ func (ec *executionContext) _Query_Torrents(ctx context.Context, field graphql.C
 		ec.fieldContext_Query_Torrents,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().Torrents(ctx, fc.Args["categories"].([]string), fc.Args["servers"].([]string))
+			return ec.Resolvers.Query().Torrents(ctx, fc.Args["categories"].([]string), fc.Args["servers"].([]string))
 		},
 		nil,
 		ec.marshalNTorrent2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentᚄ,
@@ -1485,7 +1449,7 @@ func (ec *executionContext) _Query_Categories(ctx context.Context, field graphql
 		field,
 		ec.fieldContext_Query_Categories,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Query().Categories(ctx)
+			return ec.Resolvers.Query().Categories(ctx)
 		},
 		nil,
 		ec.marshalNCategory2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategoryᚄ,
@@ -1523,7 +1487,7 @@ func (ec *executionContext) _Query_Torrent(ctx context.Context, field graphql.Co
 		ec.fieldContext_Query_Torrent,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.resolvers.Query().Torrent(ctx, fc.Args["infoHashV1"].(string))
+			return ec.Resolvers.Query().Torrent(ctx, fc.Args["infoHashV1"].(string))
 		},
 		nil,
 		ec.marshalNTorrent2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent,
@@ -1594,7 +1558,7 @@ func (ec *executionContext) _Query___type(ctx context.Context, field graphql.Col
 		ec.fieldContext_Query___type,
 		func(ctx context.Context) (any, error) {
 			fc := graphql.GetFieldContext(ctx)
-			return ec.introspectType(fc.Args["name"].(string))
+			return ec.IntrospectType(fc.Args["name"].(string))
 		},
 		nil,
 		ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType,
@@ -1658,7 +1622,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 		field,
 		ec.fieldContext_Query___schema,
 		func(ctx context.Context) (any, error) {
-			return ec.introspectSchema()
+			return ec.IntrospectSchema()
 		},
 		nil,
 		ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema,
@@ -1991,7 +1955,7 @@ func (ec *executionContext) _Torrent_Trackers(ctx context.Context, field graphql
 		field,
 		ec.fieldContext_Torrent_Trackers,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Torrent().Trackers(ctx, obj)
+			return ec.Resolvers.Torrent().Trackers(ctx, obj)
 		},
 		nil,
 		ec.marshalNTracker2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTrackerᚄ,
@@ -2067,7 +2031,7 @@ func (ec *executionContext) _Torrent_Files(ctx context.Context, field graphql.Co
 		field,
 		ec.fieldContext_Torrent_Files,
 		func(ctx context.Context) (any, error) {
-			return ec.resolvers.Torrent().Files(ctx, obj)
+			return ec.Resolvers.Torrent().Files(ctx, obj)
 		},
 		nil,
 		ec.marshalNFile2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFileᚄ,
@@ -3845,12 +3809,16 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 func (ec *executionContext) unmarshalInputCreateCategoryArgs(ctx context.Context, obj any) (CreateCategoryArgs, error) {
 	var it CreateCategoryArgs
+	if obj == nil {
+		return it, nil
+	}
+
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"Name", "Path"}
+	fieldsInOrder := [...]string{"Name", "Path", "Server"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3871,14 +3839,24 @@ func (ec *executionContext) unmarshalInputCreateCategoryArgs(ctx context.Context
 				return it, err
 			}
 			it.Path = data
+		case "Server":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Server"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Server = data
 		}
 	}
-
 	return it, nil
 }
 
 func (ec *executionContext) unmarshalInputDeleteTorrentInfo(ctx context.Context, obj any) (DeleteTorrentInfo, error) {
 	var it DeleteTorrentInfo
+	if obj == nil {
+		return it, nil
+	}
+
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -3907,12 +3885,15 @@ func (ec *executionContext) unmarshalInputDeleteTorrentInfo(ctx context.Context,
 			it.Hash = data
 		}
 	}
-
 	return it, nil
 }
 
 func (ec *executionContext) unmarshalInputDeleteTorrentsArgs(ctx context.Context, obj any) (DeleteTorrentsArgs, error) {
 	var it DeleteTorrentsArgs
+	if obj == nil {
+		return it, nil
+	}
+
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -3945,12 +3926,15 @@ func (ec *executionContext) unmarshalInputDeleteTorrentsArgs(ctx context.Context
 			it.DeleteFiles = data
 		}
 	}
-
 	return it, nil
 }
 
 func (ec *executionContext) unmarshalInputPauseTorrentInfo(ctx context.Context, obj any) (PauseTorrentInfo, error) {
 	var it PauseTorrentInfo
+	if obj == nil {
+		return it, nil
+	}
+
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -3979,12 +3963,15 @@ func (ec *executionContext) unmarshalInputPauseTorrentInfo(ctx context.Context, 
 			it.Hash = data
 		}
 	}
-
 	return it, nil
 }
 
 func (ec *executionContext) unmarshalInputPauseTorrentsArgs(ctx context.Context, obj any) (PauseTorrentsArgs, error) {
 	var it PauseTorrentsArgs
+	if obj == nil {
+		return it, nil
+	}
+
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -4006,12 +3993,15 @@ func (ec *executionContext) unmarshalInputPauseTorrentsArgs(ctx context.Context,
 			it.Torrents = data
 		}
 	}
-
 	return it, nil
 }
 
 func (ec *executionContext) unmarshalInputResumeTorrentInfo(ctx context.Context, obj any) (ResumeTorrentInfo, error) {
 	var it ResumeTorrentInfo
+	if obj == nil {
+		return it, nil
+	}
+
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -4040,12 +4030,15 @@ func (ec *executionContext) unmarshalInputResumeTorrentInfo(ctx context.Context,
 			it.Hash = data
 		}
 	}
-
 	return it, nil
 }
 
 func (ec *executionContext) unmarshalInputResumeTorrentsArgs(ctx context.Context, obj any) (ResumeTorrentsArgs, error) {
 	var it ResumeTorrentsArgs
+	if obj == nil {
+		return it, nil
+	}
+
 	asMap := map[string]any{}
 	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
@@ -4067,7 +4060,6 @@ func (ec *executionContext) unmarshalInputResumeTorrentsArgs(ctx context.Context
 			it.Torrents = data
 		}
 	}
-
 	return it, nil
 }
 
@@ -4114,10 +4106,10 @@ func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet,
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4153,10 +4145,10 @@ func (ec *executionContext) _CreateCategoryResult(ctx context.Context, sel ast.S
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4192,10 +4184,10 @@ func (ec *executionContext) _DeleteTorrentsResults(ctx context.Context, sel ast.
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4266,10 +4258,10 @@ func (ec *executionContext) _File(ctx context.Context, sel ast.SelectionSet, obj
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4336,10 +4328,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4375,10 +4367,10 @@ func (ec *executionContext) _PauseTorrentsResults(ctx context.Context, sel ast.S
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4491,10 +4483,10 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4530,10 +4522,10 @@ func (ec *executionContext) _ResumeTorrentsResults(ctx context.Context, sel ast.
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4696,10 +4688,10 @@ func (ec *executionContext) _Torrent(ctx context.Context, sel ast.SelectionSet, 
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4770,10 +4762,10 @@ func (ec *executionContext) _Tracker(ctx context.Context, sel ast.SelectionSet, 
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4826,10 +4818,10 @@ func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionS
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4874,10 +4866,10 @@ func (ec *executionContext) ___EnumValue(ctx context.Context, sel ast.SelectionS
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4932,10 +4924,10 @@ func (ec *executionContext) ___Field(ctx context.Context, sel ast.SelectionSet, 
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -4987,10 +4979,10 @@ func (ec *executionContext) ___InputValue(ctx context.Context, sel ast.Selection
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -5042,10 +5034,10 @@ func (ec *executionContext) ___Schema(ctx context.Context, sel ast.SelectionSet,
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -5101,10 +5093,10 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 		return graphql.Null
 	}
 
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
 
 	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
 			Label:    label,
 			Path:     graphql.GetPath(ctx),
 			FieldSet: dfs,
@@ -5140,39 +5132,11 @@ func (ec *executionContext) marshalNCategory2githubᚗcomᚋkingsukhoiᚋqbitorr
 }
 
 func (ec *executionContext) marshalNCategory2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []Category) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNCategory2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategory(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNCategory2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategory(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -5241,39 +5205,11 @@ func (ec *executionContext) marshalNFile2githubᚗcomᚋkingsukhoiᚋqbitorrent�
 }
 
 func (ec *executionContext) marshalNFile2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFileᚄ(ctx context.Context, sel ast.SelectionSet, v []File) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNFile2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFile(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNFile2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐFile(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -5481,39 +5417,11 @@ func (ec *executionContext) marshalNTorrent2githubᚗcomᚋkingsukhoiᚋqbitorre
 }
 
 func (ec *executionContext) marshalNTorrent2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentᚄ(ctx context.Context, sel ast.SelectionSet, v []Torrent) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNTorrent2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNTorrent2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -5525,39 +5433,11 @@ func (ec *executionContext) marshalNTorrent2ᚕgithubᚗcomᚋkingsukhoiᚋqbito
 }
 
 func (ec *executionContext) marshalNTorrent2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx context.Context, sel ast.SelectionSet, v []*Torrent) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOTorrent2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalOTorrent2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx, sel, v[i])
+	})
 
 	return ret
 }
@@ -5567,39 +5447,11 @@ func (ec *executionContext) marshalNTracker2githubᚗcomᚋkingsukhoiᚋqbitorre
 }
 
 func (ec *executionContext) marshalNTracker2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTrackerᚄ(ctx context.Context, sel ast.SelectionSet, v []Tracker) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNTracker2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTracker(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNTracker2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTracker(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -5615,39 +5467,11 @@ func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlge
 }
 
 func (ec *executionContext) marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirectiveᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.Directive) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -5690,39 +5514,11 @@ func (ec *executionContext) unmarshalN__DirectiveLocation2ᚕstringᚄ(ctx conte
 }
 
 func (ec *executionContext) marshalN__DirectiveLocation2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalN__DirectiveLocation2string(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalN__DirectiveLocation2string(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -5746,39 +5542,11 @@ func (ec *executionContext) marshalN__InputValue2githubᚗcomᚋ99designsᚋgqlg
 }
 
 func (ec *executionContext) marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.InputValue) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalN__InputValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalN__InputValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -5794,39 +5562,11 @@ func (ec *executionContext) marshalN__Type2githubᚗcomᚋ99designsᚋgqlgenᚋg
 }
 
 func (ec *executionContext) marshalN__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.Type) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalN__Type2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalN__Type2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -5982,39 +5722,11 @@ func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgq
 	if v == nil {
 		return graphql.Null
 	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalN__EnumValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalN__EnumValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValue(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -6029,39 +5741,11 @@ func (ec *executionContext) marshalO__Field2ᚕgithubᚗcomᚋ99designsᚋgqlgen
 	if v == nil {
 		return graphql.Null
 	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalN__Field2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalN__Field2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐField(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -6076,39 +5760,11 @@ func (ec *executionContext) marshalO__InputValue2ᚕgithubᚗcomᚋ99designsᚋg
 	if v == nil {
 		return graphql.Null
 	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalN__InputValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalN__InputValue2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValue(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {
@@ -6130,39 +5786,11 @@ func (ec *executionContext) marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgen�
 	if v == nil {
 		return graphql.Null
 	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalN__Type2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalN__Type2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, sel, v[i])
+	})
 
 	for _, e := range ret {
 		if e == graphql.Null {

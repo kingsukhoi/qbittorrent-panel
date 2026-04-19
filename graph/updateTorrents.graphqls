@@ -1,6 +1,7 @@
 input CreateCategoryArgs {
     Name: String!
     Path: String!
+    Server: String!
 }
 
 type CreateCategoryResult{
