@@ -5,6 +5,7 @@ Multi-server qBittorrent management panel. React frontend consuming a Go GraphQL
 ## Rules
 
 - **Do not touch any Go code.** Frontend only.
+- **Always run `pnpm build` after making changes to verify no type errors.**
 - `graphql-request` v7 requires absolute URLs. Never pass relative paths (e.g. `"/query"`) to `GraphQLClient` — use
   `window.location.origin` as fallback.
 - All modals use Headless UI `Dialog` — not raw divs.

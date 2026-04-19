@@ -14,6 +14,7 @@ function QBittorrentPanel() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedServer, setSelectedServer] = useState<string | null>(null);
     const [selectedTracker, setSelectedTracker] = useState<string | null>(null);
+    const [selectedTrackerStatus, setSelectedTrackerStatus] = useState<string | null>(null);
     const [selectedTorrentHash, setSelectedTorrentHash] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [sidebarWidth, setSidebarWidth] = useState(208);
@@ -21,6 +22,8 @@ function QBittorrentPanel() {
     const [isResizingSidebar, setIsResizingSidebar] = useState(false);
     const [isResizingDetails, setIsResizingDetails] = useState(false);
     const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
+    const [selectedTorrents, setSelectedTorrents] = useState<Torrent[]>([]);
+    const [sortResetKey, setSortResetKey] = useState(0);
 
     const {data: torrentsData} = useTorrents({
         categories: selectedCategory ? [selectedCategory] : undefined,
@@ -68,8 +71,9 @@ function QBittorrentPanel() {
             <Toolbar
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
-                selectedTorrent={selectedTorrent}
                 onAddCategory={() => setIsCreateCategoryOpen(true)}
+                onResetSort={() => setSortResetKey((k) => k + 1)}
+                selectedTorrents={selectedTorrents}
             />
             <div className="flex-1 flex overflow-hidden">
                 <Sidebar
@@ -79,6 +83,8 @@ function QBittorrentPanel() {
                     onServerSelect={setSelectedServer}
                     selectedTracker={selectedTracker}
                     onTrackerSelect={setSelectedTracker}
+                    selectedTrackerStatus={selectedTrackerStatus}
+                    onTrackerStatusSelect={setSelectedTrackerStatus}
                     width={sidebarWidth}
                     searchQuery={searchQuery}
                 />
@@ -94,9 +100,12 @@ function QBittorrentPanel() {
                         selectedCategory={selectedCategory}
                         selectedServer={selectedServer}
                         selectedTracker={selectedTracker}
+                        selectedTrackerStatus={selectedTrackerStatus}
                         selectedTorrentHash={selectedTorrentHash}
                         onTorrentSelect={(hash) => setSelectedTorrentHash(hash)}
                         searchQuery={searchQuery}
+                        onSelectionChange={setSelectedTorrents}
+                        sortResetKey={sortResetKey}
                     />
                     {/* Horizontal resizer for details panel */}
                     <button

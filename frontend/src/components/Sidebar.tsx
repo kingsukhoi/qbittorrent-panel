@@ -1,5 +1,5 @@
 import {useMemo, useState} from 'react';
-import {ChevronDown, ChevronRight, Folder, FolderOpen, Radio, Server, ServerOff} from 'lucide-react';
+import {ChevronDown, ChevronRight, Folder, FolderOpen, Radio, Server, ServerOff, Signal} from 'lucide-react';
 import {useTorrents} from '../hooks/useTorrents';
 import {useCategories} from '../hooks/useCategories';
 
@@ -51,6 +51,8 @@ export default function Sidebar({
                                     onServerSelect,
                                     selectedTracker,
                                     onTrackerSelect,
+                                    selectedTrackerStatus,
+                                    onTrackerStatusSelect,
                                     width,
                                     searchQuery,
                                 }: {
@@ -60,12 +62,15 @@ export default function Sidebar({
     onServerSelect: (server: string | null) => void;
     selectedTracker: string | null;
     onTrackerSelect: (tracker: string | null) => void;
+    selectedTrackerStatus: string | null;
+    onTrackerStatusSelect: (status: string | null) => void;
     width: number;
     searchQuery: string;
 }) {
     const [categoriesCollapsed, setCategoriesCollapsed] = useState(false);
     const [serversCollapsed, setServersCollapsed] = useState(false);
     const [trackersCollapsed, setTrackersCollapsed] = useState(false);
+    const [trackerStatusCollapsed, setTrackerStatusCollapsed] = useState(false);
 
     const {data: categoriesData} = useCategories();
     const {data: torrentsData} = useTorrents();
@@ -123,6 +128,20 @@ export default function Sidebar({
         return Array.from(trackerCounts.keys()).sort();
     }, [trackerCounts]);
 
+    const trackerStatusCounts = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const t of filteredTorrents) {
+            if (!t.Trackers?.length) continue;
+            const primary = t.Trackers.find((tr) => tr.Url === t.TrackerUrl) ?? t.Trackers[0];
+            if (primary?.Status) counts.set(primary.Status, (counts.get(primary.Status) ?? 0) + 1);
+        }
+        return counts;
+    }, [filteredTorrents]);
+
+    const visibleTrackerStatuses = useMemo(() => {
+        return Array.from(trackerStatusCounts.keys()).sort();
+    }, [trackerStatusCounts]);
+
     const trackerLabel = (url: string) => {
         try {
             const {protocol, host} = new URL(url);
@@ -132,26 +151,25 @@ export default function Sidebar({
         }
     };
 
-    const hasActiveFilters = selectedCategory !== null || selectedServer !== null || selectedTracker !== null;
+    const hasActiveFilters = selectedCategory !== null || selectedServer !== null || selectedTracker !== null || selectedTrackerStatus !== null;
 
     return (
-        <div className="bg-[var(--qbt-bg-secondary)] border-r border-[var(--qbt-border)] flex flex-col"
+        <div className="relative bg-[var(--qbt-bg-secondary)] border-r border-[var(--qbt-border)] flex flex-col"
              style={{width: `${width}px`}}>
             {hasActiveFilters && (
-                <div className="px-2 pt-2 flex-shrink-0">
-                    <button
-                        type="button"
-                        onClick={() => {
-                            onCategorySelect(null);
-                            onServerSelect(null);
-                            onTrackerSelect(null);
-                        }}
-                        className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm text-[var(--qbt-text-secondary)] hover:bg-[var(--qbt-bg-tertiary)] hover:text-[var(--qbt-text-primary)] transition-colors"
-                    >
-                        <span>✕</span>
-                        <span>Clear filters</span>
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    onClick={() => {
+                        onCategorySelect(null);
+                        onServerSelect(null);
+                        onTrackerSelect(null);
+                        onTrackerStatusSelect(null);
+                    }}
+                    className="absolute top-2 left-2 right-2 z-10 flex items-center gap-2 px-2 py-1.5 rounded text-sm text-[var(--qbt-text-secondary)] bg-[var(--qbt-bg-secondary)]/90 backdrop-blur-sm border border-[var(--qbt-border)] hover:bg-[var(--qbt-bg-tertiary)] hover:text-[var(--qbt-text-primary)] transition-colors shadow-sm"
+                >
+                    <span>✕</span>
+                    <span>Clear filters</span>
+                </button>
             )}
             <div className="p-2 overflow-y-auto flex-1">
                 <SectionHeader
@@ -176,7 +194,7 @@ export default function Sidebar({
                                     ? <FolderOpen size={16} className="flex-shrink-0"/>
                                     : <Folder size={16} className="flex-shrink-0"/>}
                                 selected={selectedCategory === category.Name}
-                                onClick={() => onCategorySelect(category.Name)}
+                                onClick={() => onCategorySelect(selectedCategory === category.Name ? null : category.Name)}
                             />
                         ))}
                     </>
@@ -204,7 +222,7 @@ export default function Sidebar({
                                     ? <Server size={16} className="flex-shrink-0 text-[var(--qbt-accent)]"/>
                                     : <ServerOff size={16} className="flex-shrink-0"/>}
                                 selected={selectedServer === server}
-                                onClick={() => onServerSelect(server)}
+                                onClick={() => onServerSelect(selectedServer === server ? null : server)}
                             />
                         ))}
                     </>
@@ -231,7 +249,34 @@ export default function Sidebar({
                                 icon={<Radio size={16}
                                              className={`flex-shrink-0 ${selectedTracker === tracker ? 'text-[var(--qbt-accent)]' : ''}`}/>}
                                 selected={selectedTracker === tracker}
-                                onClick={() => onTrackerSelect(tracker)}
+                                onClick={() => onTrackerSelect(selectedTracker === tracker ? null : tracker)}
+                            />
+                        ))}
+                    </>
+                )}
+
+                <SectionHeader
+                    label="TRACKER STATUS"
+                    collapsed={trackerStatusCollapsed}
+                    onToggle={() => setTrackerStatusCollapsed((v) => !v)}
+                />
+
+                {!trackerStatusCollapsed && (
+                    <>
+                        <FilterItem
+                            label={`All (${filteredTorrents.length})`}
+                            icon={<Signal size={16} className="flex-shrink-0"/>}
+                            selected={selectedTrackerStatus === null}
+                            onClick={() => onTrackerStatusSelect(null)}
+                        />
+                        {visibleTrackerStatuses.map((status) => (
+                            <FilterItem
+                                key={status}
+                                label={`${status} (${trackerStatusCounts.get(status) ?? 0})`}
+                                icon={<Signal size={16}
+                                              className={`flex-shrink-0 ${selectedTrackerStatus === status ? 'text-[var(--qbt-accent)]' : ''}`}/>}
+                                selected={selectedTrackerStatus === status}
+                                onClick={() => onTrackerStatusSelect(selectedTrackerStatus === status ? null : status)}
                             />
                         ))}
                     </>

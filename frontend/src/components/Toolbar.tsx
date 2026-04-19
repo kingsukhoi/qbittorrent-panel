@@ -1,15 +1,18 @@
-import {FolderPlus, Pause, Play, Plus, Search, Settings, Trash2, Upload} from 'lucide-react';
+import {FolderPlus, Pause, Play, Plus, RotateCcw, Search, Trash2, Upload} from 'lucide-react';
 import {useEffect, useRef, useState} from 'react';
 import UploadTorrentModal from './UploadTorrentModal';
+import DeleteConfirmModal from './DeleteConfirmModal';
 import {usePauseTorrents, useResumeTorrents} from "../hooks/useTorrentMutations";
 
-export default function Toolbar({searchQuery, onSearchChange, selectedTorrent, onAddCategory}: {
+export default function Toolbar({searchQuery, onSearchChange, onAddCategory, onResetSort, selectedTorrents}: {
     searchQuery: string;
     onSearchChange: (query: string) => void;
-    selectedTorrent?: { Server: string; InfoHashV1: string } | null;
     onAddCategory?: () => void;
+    onResetSort?: () => void;
+    selectedTorrents?: { Server: string; InfoHashV1: string; Name: string }[];
 }) {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isPlusOpen, setIsPlusOpen] = useState(false);
     const plusRef = useRef<HTMLDivElement>(null);
     const {mutate: pauseTorrents} = usePauseTorrents();
@@ -26,18 +29,18 @@ export default function Toolbar({searchQuery, onSearchChange, selectedTorrent, o
         return () => document.removeEventListener('mousedown', handler);
     }, [isPlusOpen]);
 
+    const targets = selectedTorrents?.length
+        ? selectedTorrents.map((t) => ({Server: t.Server, Hash: t.InfoHashV1}))
+        : null;
+
     const handlePause = () => {
-        if (!selectedTorrent) return;
-        pauseTorrents({
-            Torrents: [{Server: selectedTorrent.Server, Hash: selectedTorrent.InfoHashV1}],
-        });
+        if (!targets) return;
+        pauseTorrents({Torrents: targets});
     };
 
     const handleResume = () => {
-        if (!selectedTorrent) return;
-        resumeTorrents({
-            Torrents: [{Server: selectedTorrent.Server, Hash: selectedTorrent.InfoHashV1}],
-        });
+        if (!targets) return;
+        resumeTorrents({Torrents: targets});
     };
 
     return (
@@ -83,7 +86,7 @@ export default function Toolbar({searchQuery, onSearchChange, selectedTorrent, o
                 </div>
                 <button type="button"
                         className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors disabled:opacity-50"
-                        title="Resume" disabled={!selectedTorrent}
+                        title="Resume" disabled={!targets}
                         onClick={handleResume}
                 >
                 <Play size={18}/>
@@ -91,14 +94,16 @@ export default function Toolbar({searchQuery, onSearchChange, selectedTorrent, o
                 <button type="button"
                         className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors disabled:opacity-50"
                         title="Pause"
-                        disabled={!selectedTorrent}
+                        disabled={!targets}
                         onClick={handlePause}
                 >
                 <Pause size={18}/>
             </button>
             <button type="button"
-                    className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors text-red-400"
-                    title="Delete">
+                    disabled={!selectedTorrents?.length}
+                    className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors text-red-400 disabled:opacity-50"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    title={selectedTorrents?.length ? `Delete ${selectedTorrents.length} torrent${selectedTorrents.length > 1 ? 's' : ''}` : 'Delete'}>
                 <Trash2 size={18}/>
             </button>
             <div className="flex-1"/>
@@ -114,13 +119,20 @@ export default function Toolbar({searchQuery, onSearchChange, selectedTorrent, o
                 />
             </div>
                 <button type="button" className="p-2 hover:bg-[var(--qbt-bg-tertiary)] rounded transition-colors"
-                        title="Settings">
-                    <Settings size={18}/>
+                        title="Reset sort" onClick={onResetSort}>
+                    <RotateCcw size={18}/>
                 </button>
             </div>
             <UploadTorrentModal
                 isOpen={isUploadModalOpen}
                 onClose={() => setIsUploadModalOpen(false)}
+            />
+            <DeleteConfirmModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                torrents={selectedTorrents ?? []}
+                onDeleted={() => {
+                }}
             />
         </>
     );

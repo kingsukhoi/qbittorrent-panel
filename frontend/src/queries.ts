@@ -13,6 +13,10 @@ export const GET_TORRENTS = `
             TrackerUrl
             AddedOn
             State
+            Trackers {
+                Url
+                Status
+            }
             Files {
                 Availability
                 Index
@@ -75,6 +79,14 @@ export const PAUSE_TORRENTS = `
 export const RESUME_TORRENTS = `
     mutation ResumeTorrents($args: ResumeTorrentsArgs!) {
         resumeTorrents(args: $args) {
+            Success
+        }
+    }
+`;
+
+export const DELETE_TORRENTS = `
+    mutation DeleteTorrents($args: DeleteTorrentsArgs!) {
+        deleteTorrents(args: $args) {
             Success
         }
     }

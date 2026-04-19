@@ -5,6 +5,7 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getSortedRowModel,
+	type RowSelectionState,
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
@@ -87,13 +88,51 @@ function getProgress(torrent: Torrent): number {
 const columnHelper = createColumnHelper<Torrent>();
 
 const columns = [
+    columnHelper.accessor("State", {
+        header: ({table}) => {
+            const selectedCount = table.getSelectedRowModel().rows.length;
+            return (
+                <div className="flex items-center gap-1.5">
+                    <input
+                        type="checkbox"
+                        checked={table.getIsAllRowsSelected()}
+                        ref={(el) => {
+                            if (el) el.indeterminate = table.getIsSomeRowsSelected();
+                        }}
+                        onChange={() => table.toggleAllRowsSelected(!table.getIsAllRowsSelected() && !table.getIsSomeRowsSelected())}
+                        className="cursor-pointer accent-[var(--qbt-accent)]"
+                    />
+                    {selectedCount > 0 && (
+                        <span className="text-xs text-[var(--qbt-text-secondary)]">{selectedCount}</span>
+                    )}
+                </div>
+            );
+        },
+        size: 36,
+        enableSorting: false,
+        cell: (info) => (
+            <button
+                type="button"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    info.row.toggleSelected();
+                }}
+                className="flex items-center justify-center w-6 h-6 rounded hover:bg-[var(--qbt-bg-tertiary)] transition-colors"
+            >
+                {info.row.getIsSelected()
+                    ? <input type="checkbox" checked readOnly
+                             className="cursor-pointer accent-[var(--qbt-accent)] pointer-events-none"/>
+                    : <StatusIcon state={info.getValue()}/>
+                }
+            </button>
+        ),
+    }),
 	columnHelper.accessor("Name", {
 		header: "Name",
 		size: 300,
 		cell: (info) => (
-			<div className="flex items-center gap-2 truncate" title={info.getValue()}>
-				<StatusIcon state={info.row.original.State}/>
-				<span className="truncate">{info.getValue()}</span>
+            <div className="truncate" title={info.getValue()}>
+                {info.getValue()}
 			</div>
 		),
 	}),
@@ -166,16 +205,22 @@ export default function TorrentTable({
 										 selectedCategory,
                                          selectedServer,
                                          selectedTracker,
+                                         selectedTrackerStatus,
 										 selectedTorrentHash,
 										 onTorrentSelect,
 										 searchQuery,
+                                         onSelectionChange,
+                                         sortResetKey,
 									 }: {
 	selectedCategory: string | null;
     selectedServer: string | null;
     selectedTracker: string | null;
+    selectedTrackerStatus: string | null;
 	selectedTorrentHash: string | null;
 	onTorrentSelect: (hash: string) => void;
 	searchQuery: string;
+    onSelectionChange?: (torrents: Torrent[]) => void;
+    sortResetKey?: number;
 }) {
     const {data} = useTorrents({
         categories: selectedCategory ? [selectedCategory] : undefined,
@@ -187,6 +232,14 @@ export default function TorrentTable({
 
         if (selectedTracker) {
             allTorrents = allTorrents.filter((t) => t.TrackerUrl === selectedTracker);
+        }
+
+        if (selectedTrackerStatus) {
+            allTorrents = allTorrents.filter((t) => {
+                if (!t.Trackers?.length) return false;
+                const primary = t.Trackers.find((tr) => tr.Url === t.TrackerUrl) ?? t.Trackers[0];
+                return primary?.Status === selectedTrackerStatus;
+            });
         }
 
 		if (!searchQuery.trim()) {
@@ -204,11 +257,14 @@ export default function TorrentTable({
 		);
     }, [data?.Torrents, searchQuery, selectedTracker]);
 
-	const [sorting, setSorting] = useState<SortingState>([
-		{id: "AddedOn", desc: true},
-		{id: "Name", desc: false},
-	]);
+    const defaultSorting: SortingState = [{id: "AddedOn", desc: true}, {id: "Name", desc: false}];
+    const [sorting, setSorting] = useState<SortingState>(defaultSorting);
+
+    useEffect(() => {
+        if (sortResetKey) setSorting(defaultSorting);
+    }, [sortResetKey]);
 	const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const scrollPositionRef = useRef<number>(0);
 
@@ -242,12 +298,22 @@ export default function TorrentTable({
 		state: {
 			sorting,
 			columnSizing,
+            rowSelection,
 		},
 		onSortingChange: handleSortingChange,
 		onColumnSizingChange: setColumnSizing,
+        onRowSelectionChange: (updater) => {
+            setRowSelection((old) => {
+                const next = typeof updater === "function" ? updater(old) : updater;
+                const selected = torrents.filter((t) => next[t.InfoHashV1]);
+                onSelectionChange?.(selected);
+                return next;
+            });
+        },
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		columnResizeMode: "onChange",
+        enableRowSelection: true,
 		getRowId: (row) => row.InfoHashV1,
 		defaultColumn: {
 			minSize: 50,
@@ -308,7 +374,7 @@ export default function TorrentTable({
 				{table.getRowModel().rows.length === 0 && (
 					<tr>
 						<td
-							colSpan={columns.length}
+                            colSpan={table.getAllColumns().length}
 							className="text-center py-8 text-[var(--qbt-text-secondary)]"
 						>
 							No torrents found

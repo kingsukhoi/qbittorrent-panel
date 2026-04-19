@@ -1,6 +1,6 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {graphqlClient} from '../lib/graphqlClient';
-import {CREATE_CATEGORY, PAUSE_TORRENTS, RESUME_TORRENTS} from '../queries';
+import {CREATE_CATEGORY, DELETE_TORRENTS, PAUSE_TORRENTS, RESUME_TORRENTS} from '../queries';
 
 interface TorrentRef {
     Server: string;
@@ -24,6 +24,22 @@ export function useCreateCategory() {
             graphqlClient.request(CREATE_CATEGORY, {args}),
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: ['categories']});
+        },
+    });
+}
+
+interface DeleteArgs {
+    Torrents: TorrentRef[];
+    DeleteFiles: boolean;
+}
+
+export function useDeleteTorrents() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (args: DeleteArgs) =>
+            graphqlClient.request(DELETE_TORRENTS, {args}),
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ['torrents']});
         },
     });
 }
