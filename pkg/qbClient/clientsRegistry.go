@@ -31,12 +31,12 @@ var Registry = sync.OnceValue(func() *ClientRegistry {
 
 	for _, v := range cfg.Endpoints {
 		currClient, err := Login(context.Background(), configuration.QbLogin{
-			BasePath: v.BasePath,
+			Path:     v.Path,
 			Username: v.Username,
 			Password: v.Password,
 		})
 		if err != nil {
-			slog.Error("Failed to connect to client", "hostname", v.BasePath)
+			slog.Error("Failed to connect to client", "hostname", v.Path)
 			continue
 		}
 		clients[currClient.BasePath.String()] = currClient

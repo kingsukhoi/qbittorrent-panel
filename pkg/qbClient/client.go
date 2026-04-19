@@ -42,7 +42,7 @@ func (c *Client) MarshalJSON() ([]byte, error) {
 }
 
 func Login(ctx context.Context, login configuration.QbLogin) (*Client, error) {
-	baseUrl, err := url.Parse(login.BasePath)
+	baseUrl, err := url.Parse(login.Path)
 	if err != nil {
 		return nil, err
 	}

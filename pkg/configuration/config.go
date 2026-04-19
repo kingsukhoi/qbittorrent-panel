@@ -16,14 +16,14 @@ const (
 )
 
 type Config struct {
-	Port         string    `yaml:"port" default:":8080"`
+	Port         string    `yaml:"port" default:"8080"`
 	Endpoints    []QbLogin `yaml:"endpoints"`
 	FrontEndPath string    `yaml:"front_end_path" env:"FRONT_END_PATH" default:"./frontend/dist"`
 	Env          string    `yaml:"env" default:"development"`
 }
 
 type QbLogin struct {
-	BasePath string `yaml:"path"`
+	Path     string `yaml:"path"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 }
