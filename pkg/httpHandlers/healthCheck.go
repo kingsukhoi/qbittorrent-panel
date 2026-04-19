@@ -10,6 +10,10 @@ import (
 func HealthCheck(c *echo.Context) error {
 	clients := qbClient.Registry().All()
 
+	if len(clients) == 0 {
+		return echo.NewHTTPError(http.StatusServiceUnavailable, "no qbClient found")
+	}
+
 	for _, client := range clients {
 		_, err := client.GetVersion(c.Request().Context())
 		if err != nil {
