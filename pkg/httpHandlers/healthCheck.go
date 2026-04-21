@@ -1,6 +1,7 @@
 package httpHandlers
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/kingsukhoi/qbitorrent-panel/pkg/qbClient"
@@ -17,6 +18,7 @@ func HealthCheck(c *echo.Context) error {
 	for _, client := range clients {
 		_, err := client.GetVersion(c.Request().Context())
 		if err != nil {
+			slog.Error("unable to connect to qbittorrent", "error", err, "url", client.BasePath.String())
 			return err
 		}
 	}
