@@ -1,22 +1,25 @@
-import {QueryClientProvider} from '@tanstack/react-query';
-import {queryClient} from './lib/queryClient';
-import {useEffect, useMemo, useState} from 'react';
-import Toolbar from './components/Toolbar';
-import Sidebar from './components/Sidebar';
-import TorrentTable from './components/TorrentTable';
-import DetailsPanel from './components/DetailsPanel';
-import CreateCategoryModal from './components/CreateCategoryModal';
-import {useTorrents} from './hooks/useTorrents';
-import type {Torrent} from './types';
-
+import {QueryClientProvider} from "@tanstack/react-query";
+import {queryClient} from "./lib/queryClient";
+import {useEffect, useMemo, useState} from "react";
+import Toolbar from "./components/Toolbar";
+import Sidebar from "./components/Sidebar";
+import TorrentTable from "./components/TorrentTable";
+import DetailsPanel from "./components/DetailsPanel";
+import CreateCategoryModal from "./components/CreateCategoryModal";
+import {useTorrents} from "./hooks/useTorrents";
+import type {Torrent} from "./types";
 
 function QBittorrentPanel() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedServer, setSelectedServer] = useState<string | null>(null);
     const [selectedTracker, setSelectedTracker] = useState<string | null>(null);
-    const [selectedTrackerStatus, setSelectedTrackerStatus] = useState<string | null>(null);
-    const [selectedTorrentHash, setSelectedTorrentHash] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedTrackerStatus, setSelectedTrackerStatus] = useState<
+        string | null
+    >(null);
+    const [selectedTorrentHash, setSelectedTorrentHash] = useState<string | null>(
+        null,
+    );
+    const [searchQuery, setSearchQuery] = useState("");
     const [sidebarWidth, setSidebarWidth] = useState(208);
     const [detailsHeight, setDetailsHeight] = useState(256);
     const [isResizingSidebar, setIsResizingSidebar] = useState(false);
@@ -24,6 +27,8 @@ function QBittorrentPanel() {
     const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
     const [selectedTorrents, setSelectedTorrents] = useState<Torrent[]>([]);
     const [sortResetKey, setSortResetKey] = useState(0);
+    const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
     const {data: torrentsData} = useTorrents({
         categories: selectedCategory ? [selectedCategory] : undefined,
@@ -34,10 +39,18 @@ function QBittorrentPanel() {
         if (!selectedTorrentHash || !torrentsData?.Torrents) {
             return null;
         }
-        return torrentsData.Torrents.find(
-            (torrent: Torrent) => torrent.InfoHashV1 === selectedTorrentHash
-        ) ?? null;
+        return (
+            torrentsData.Torrents.find(
+                (torrent: Torrent) => torrent.InfoHashV1 === selectedTorrentHash,
+            ) ?? null
+        );
     }, [selectedTorrentHash, torrentsData?.Torrents]);
+
+    useEffect(() => {
+        const handler = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener("resize", handler);
+        return () => window.removeEventListener("resize", handler);
+    }, []);
 
     useEffect(() => {
         const handleMouseMove = (e: globalThis.MouseEvent) => {
@@ -46,7 +59,10 @@ function QBittorrentPanel() {
                 setSidebarWidth(newWidth);
             }
             if (isResizingDetails) {
-                const newHeight = Math.max(150, Math.min(600, window.innerHeight - e.clientY));
+                const newHeight = Math.max(
+                    150,
+                    Math.min(600, window.innerHeight - e.clientY),
+                );
                 setDetailsHeight(newHeight);
             }
         };
@@ -57,11 +73,11 @@ function QBittorrentPanel() {
         };
 
         if (isResizingSidebar || isResizingDetails) {
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
+            document.addEventListener("mousemove", handleMouseMove);
+            document.addEventListener("mouseup", handleMouseUp);
             return () => {
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
+                document.removeEventListener("mousemove", handleMouseMove);
+                document.removeEventListener("mouseup", handleMouseUp);
             };
         }
     }, [isResizingSidebar, isResizingDetails]);
@@ -74,6 +90,7 @@ function QBittorrentPanel() {
                 onAddCategory={() => setIsCreateCategoryOpen(true)}
                 onResetSort={() => setSortResetKey((k) => k + 1)}
                 selectedTorrents={selectedTorrents}
+                onOpenSidebar={() => setIsSidebarDrawerOpen(true)}
             />
             <div className="flex-1 flex overflow-hidden">
                 <Sidebar
@@ -87,12 +104,14 @@ function QBittorrentPanel() {
                     onTrackerStatusSelect={setSelectedTrackerStatus}
                     width={sidebarWidth}
                     searchQuery={searchQuery}
+                    isDrawerOpen={isSidebarDrawerOpen}
+                    onCloseDrawer={() => setIsSidebarDrawerOpen(false)}
                 />
-                {/* Vertical resizer for sidebar */}
+                {/* Vertical resizer for sidebar — desktop only */}
                 <button
                     type="button"
                     aria-label="Resize sidebar"
-                    className="w-1 bg-(--qbt-border) hover:bg-(--qbt-accent) cursor-col-resize transition-colors"
+                    className="hidden md:block w-1 bg-(--qbt-border) hover:bg-(--qbt-accent) cursor-col-resize transition-colors"
                     onMouseDown={() => setIsResizingSidebar(true)}
                 />
                 <div className="flex-1 flex flex-col overflow-hidden">
@@ -106,15 +125,21 @@ function QBittorrentPanel() {
                         searchQuery={searchQuery}
                         onSelectionChange={setSelectedTorrents}
                         sortResetKey={sortResetKey}
+                        isMobile={isMobile}
                     />
-                    {/* Horizontal resizer for details panel */}
+                    {/* Horizontal resizer for details panel — desktop only */}
                     <button
                         type="button"
                         aria-label="Resize details panel"
-                        className="h-1 bg-(--qbt-border) hover:bg-(--qbt-accent) cursor-row-resize transition-colors"
+                        className="hidden md:block h-1 bg-(--qbt-border) hover:bg-(--qbt-accent) cursor-row-resize transition-colors"
                         onMouseDown={() => setIsResizingDetails(true)}
                     />
-                    <DetailsPanel torrent={selectedTorrent} height={detailsHeight}/>
+                    <DetailsPanel
+                        torrent={selectedTorrent}
+                        height={detailsHeight}
+                        isOpen={!!selectedTorrent}
+                        onClose={() => setSelectedTorrentHash(null)}
+                    />
                 </div>
             </div>
             <CreateCategoryModal
@@ -133,4 +158,4 @@ function App() {
     );
 }
 
-export default App
+export default App;

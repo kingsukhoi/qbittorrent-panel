@@ -21,6 +21,8 @@
     "@tanstack/react-table": "^8.21.3",
     "graphql": "^16.13.2",
     "graphql-request": "^7.4.0",
+    "linkify-react": "^4.3.2",
+    "linkifyjs": "^4.3.2",
     "lucide-react": "^1.8.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

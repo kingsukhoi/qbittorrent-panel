@@ -1,6 +1,6 @@
-import {Dialog, DialogPanel, DialogTitle} from '@headlessui/react';
-import {useState} from 'react';
-import {useDeleteTorrents} from '../hooks/useTorrentMutations';
+import {Dialog, DialogPanel, DialogTitle} from "@headlessui/react";
+import {useState} from "react";
+import {useDeleteTorrents} from "../hooks/useTorrentMutations";
 
 interface DeleteConfirmModalProps {
     isOpen: boolean;
@@ -9,7 +9,12 @@ interface DeleteConfirmModalProps {
     onDeleted: () => void;
 }
 
-export default function DeleteConfirmModal({isOpen, onClose, torrents, onDeleted}: DeleteConfirmModalProps) {
+export default function DeleteConfirmModal({
+                                               isOpen,
+                                               onClose,
+                                               torrents,
+                                               onDeleted,
+                                           }: DeleteConfirmModalProps) {
     const [deleteFiles, setDeleteFiles] = useState(false);
     const {mutateAsync: deleteTorrents, isPending} = useDeleteTorrents();
 
@@ -30,19 +35,23 @@ export default function DeleteConfirmModal({isOpen, onClose, torrents, onDeleted
                 <DialogPanel
                     className="bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg w-full max-w-sm shadow-xl p-6 space-y-4">
                     <DialogTitle className="text-lg font-semibold text-[var(--qbt-text-primary)]">
-                        Delete {torrents.length} torrent{torrents.length > 1 ? 's' : ''}?
+                        Delete {torrents.length} torrent{torrents.length > 1 ? "s" : ""}?
                     </DialogTitle>
                     <div
                         className="max-h-40 overflow-y-auto rounded border border-[var(--qbt-border)] bg-[var(--qbt-bg-primary)]">
                         {torrents.map((t) => (
-                            <div key={t.InfoHashV1}
-                                 className="px-3 py-1.5 text-sm text-[var(--qbt-text-primary)] border-b border-[var(--qbt-border)] last:border-0 truncate"
-                                 title={t.Name}>
+                            <div
+                                key={t.InfoHashV1}
+                                className="px-3 py-1.5 text-sm text-[var(--qbt-text-primary)] border-b border-[var(--qbt-border)] last:border-0 truncate"
+                                title={t.Name}
+                            >
                                 {t.Name}
                             </div>
                         ))}
                     </div>
-                    <p className="text-sm text-[var(--qbt-text-secondary)]">This cannot be undone.</p>
+                    <p className="text-sm text-[var(--qbt-text-secondary)]">
+                        This cannot be undone.
+                    </p>
                     <label className="flex items-center gap-2 text-sm text-[var(--qbt-text-primary)] cursor-pointer">
                         <input
                             type="checkbox"
@@ -66,7 +75,7 @@ export default function DeleteConfirmModal({isOpen, onClose, torrents, onDeleted
                             disabled={isPending}
                             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors disabled:opacity-50"
                         >
-                            {isPending ? 'Deleting...' : 'Delete'}
+                            {isPending ? "Deleting..." : "Delete"}
                         </button>
                     </div>
                 </DialogPanel>

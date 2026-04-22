@@ -1,13 +1,13 @@
 # qbittorrent-panel — Frontend
 
-Multi-server qBittorrent panel. React frontend, Go GraphQL backend.
+Multi-server qBittorrent management panel. React frontend consuming a Go GraphQL backend.
 
 ## Rules
 
-- **No Go code.** Frontend only.
-- **Run `pnpm build` after changes — verify no type errors.**
-- **Run `pnpm format --write` before reporting done**
-- `graphql-request` v7 needs absolute URLs. Never pass relative paths (e.g. `"/query"`) to `GraphQLClient` — use
+- **Do not touch any Go code.** Frontend only.
+- **Always run `pnpm build` after making changes to verify no type errors.**
+- **Always run `pnpm format --write` before you report when you're done**
+- `graphql-request` v7 requires absolute URLs. Never pass relative paths (e.g. `"/query"`) to `GraphQLClient` — use
   `window.location.origin` as fallback.
 - All modals use Headless UI `Dialog` — not raw divs.
 
@@ -43,7 +43,7 @@ src/
 
 ## GraphQL schema
 
-See `../graph/*.graphqls` for queries and mutations.
+See `../graph/*.graphqls` for all queries and mutations.
 
 ## Dev workflow
 
@@ -52,5 +52,5 @@ See `../graph/*.graphqls` for queries and mutations.
 make dev      # Vite dev server + Go server (VITE_API_BASE_URL=http://localhost:8080)
 ```
 
-Backend serves frontend from `./frontend/dist`. Production: `VITE_API_BASE_URL` unset — `window.location.origin` used,
-requests go to same origin.
+Backend serves frontend from `./frontend/dist`. In production, `VITE_API_BASE_URL` is unset — `window.location.origin`
+is used so requests go to the same origin.
