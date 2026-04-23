@@ -1,0 +1,14 @@
+input TorrentSyncApiArgs{
+    rid: Int
+}
+
+
+type SyncApiResults{
+    Categories: [Category!]
+    Torrents: [Torrent!]
+    Trackers: [Tracker!]
+}
+
+extend type Query {
+    TorrentsSyncApi(args:TorrentSyncApiArgs!):SyncApiResults!
+}
