@@ -75,6 +75,12 @@ type ResumeTorrentsResults struct {
 	Success bool `json:"Success"`
 }
 
+type SyncAPIResults struct {
+	Categories []Category `json:"Categories,omitempty"`
+	Torrents   []Torrent  `json:"Torrents,omitempty"`
+	Trackers   []Tracker  `json:"Trackers,omitempty"`
+}
+
 type Torrent struct {
 	Server     string    `json:"Server"`
 	Name       string    `json:"Name"`
@@ -90,6 +96,10 @@ type Torrent struct {
 	Files      []File    `json:"Files"`
 	AddedOn    int64     `json:"AddedOn"`
 	State      string    `json:"State"`
+}
+
+type TorrentSyncAPIArgs struct {
+	Rid *int `json:"rid,omitempty"`
 }
 
 type Tracker struct {

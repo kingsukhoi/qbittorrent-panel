@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from "react";
 import Linkify from "linkify-react";
 import {Dialog, DialogPanel} from "@headlessui/react";
 import {FileText, Info, List, RefreshCw, X} from "lucide-react";
-import type {Torrent} from "../types";
+import type {Torrent, Tracker} from "../types";
 import {useTorrentTrackers} from "../hooks/useTorrentTrackers";
 
 type Tab = "general" | "files" | "trackers";
@@ -20,11 +20,13 @@ export default function DetailsPanel({
                                          height,
                                          isOpen,
                                          onClose,
+                                         isMobile,
                                      }: {
     torrent: Torrent | null;
     height: number;
     isOpen: boolean;
     onClose: () => void;
+    isMobile: boolean;
 }) {
     const [activeTab, setActiveTab] = useState<Tab>("general");
     const [dragY, setDragY] = useState(window.innerHeight);
@@ -223,9 +225,9 @@ export default function DetailsPanel({
                         </div>
                     ) : trackers.length > 0 ? (
                         <div className="flex flex-col">
-                            {trackers.map((tracker: any, i: number) => (
+                            {trackers.map((tracker: Tracker) => (
                                 <div
-                                    key={i}
+                                    key={tracker.Url}
                                     className="flex flex-col gap-1 px-3 py-2 border-b border-(--qbt-border) hover:bg-(--qbt-bg-tertiary)"
                                 >
                                     {/* Row 1: URL */}
@@ -280,8 +282,8 @@ export default function DetailsPanel({
             </div>
 
             {/* Mobile: bottom sheet Dialog */}
-            {isOpen && (
-                <div className="md:hidden">
+            {isOpen && isMobile && (
+                <div>
                     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
                         <div className="fixed inset-0 bg-black/50" aria-hidden="true"/>
                         <div className="fixed inset-0 flex items-end">
@@ -289,7 +291,9 @@ export default function DetailsPanel({
                                 className="w-screen h-[85vh] bg-(--qbt-bg-secondary) rounded-t-2xl flex flex-col shadow-2xl"
                                 style={{
                                     transform: `translateY(${dragY}px)`,
-                                    transition: isDragging ? "none" : "transform 250ms cubic-bezier(0.32, 0.72, 0, 1)",
+                                    transition: isDragging
+                                        ? "none"
+                                        : "transform 250ms cubic-bezier(0.32, 0.72, 0, 1)",
                                 }}
                             >
                                 <div

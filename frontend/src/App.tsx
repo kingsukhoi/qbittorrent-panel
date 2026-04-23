@@ -1,13 +1,14 @@
 import {QueryClientProvider} from "@tanstack/react-query";
 import {queryClient} from "./lib/queryClient";
-import {useEffect, useMemo, useState} from "react";
+import {lazy, Suspense, useEffect, useMemo, useState} from "react";
 import Toolbar from "./components/Toolbar";
 import Sidebar from "./components/Sidebar";
 import TorrentTable from "./components/TorrentTable";
 import DetailsPanel from "./components/DetailsPanel";
-import CreateCategoryModal from "./components/CreateCategoryModal";
 import {useTorrents} from "./hooks/useTorrents";
 import type {Torrent} from "./types";
+
+const CreateCategoryModal = lazy(() => import("./components/CreateCategoryModal"));
 
 function QBittorrentPanel() {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -139,13 +140,16 @@ function QBittorrentPanel() {
                         height={detailsHeight}
                         isOpen={!!selectedTorrent}
                         onClose={() => setSelectedTorrentHash(null)}
+                        isMobile={isMobile}
                     />
                 </div>
             </div>
-            <CreateCategoryModal
-                isOpen={isCreateCategoryOpen}
-                onClose={() => setIsCreateCategoryOpen(false)}
-            />
+            <Suspense fallback={null}>
+                <CreateCategoryModal
+                    isOpen={isCreateCategoryOpen}
+                    onClose={() => setIsCreateCategoryOpen(false)}
+                />
+            </Suspense>
         </div>
     );
 }

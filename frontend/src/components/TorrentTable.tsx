@@ -5,6 +5,7 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getSortedRowModel,
+	type OnChangeFn,
 	type RowSelectionState,
 	type SortingState,
 	useReactTable,
@@ -12,6 +13,11 @@ import {
 import {useTorrents} from "../hooks/useTorrents";
 import {AlertCircle, ArrowDown, ArrowDownUp, ArrowUp, Clock, HelpCircle, Pause, RefreshCw,} from "lucide-react";
 import type {Torrent} from "../types";
+
+const defaultSorting: SortingState = [
+	{id: "AddedOn", desc: true},
+	{id: "Name", desc: false},
+];
 
 function StatusIcon({state}: { state: string }) {
 	let icon = null;
@@ -72,7 +78,7 @@ function formatBytes(bytes: number): string {
 function formatDate(timestamp: number): string {
 	if (!timestamp) return "-";
 	const date = new Date(timestamp * 1000); // Convert Unix timestamp to milliseconds
-	return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+	return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 }
 
 // Calculate average progress
@@ -268,7 +274,7 @@ export default function TorrentTable({
 				torrent.Server.toLowerCase().includes(query) ||
 				torrent.SavePath.toLowerCase().includes(query),
 		);
-	}, [data?.Torrents, searchQuery, selectedTracker]);
+	}, [data?.Torrents, searchQuery, selectedTracker, selectedTrackerStatus]);
 
 	const columnVisibility = useMemo(
 		() => ({
@@ -291,10 +297,6 @@ export default function TorrentTable({
 		{id: "State", label: "Status"},
 	];
 
-	const defaultSorting: SortingState = [
-		{id: "AddedOn", desc: true},
-		{id: "Name", desc: false},
-	];
 	const [sorting, setSorting] = useState<SortingState>(defaultSorting);
 
 	useEffect(() => {
@@ -318,7 +320,7 @@ export default function TorrentTable({
 	};
 
 	// Custom sorting handler that maintains Name as secondary sort
-	const handleSortingChange = (updater: any) => {
+	const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
 		setSorting((old) => {
 			const newSorting = typeof updater === "function" ? updater(old) : updater;
 			// Always ensure Name is the secondary sort if not already the primary sort
@@ -447,30 +449,26 @@ export default function TorrentTable({
 						return (
 							<div
 								key={row.id}
-								onClick={() => onTorrentSelect(torrent.InfoHashV1)}
-								className={`flex items-start gap-2 px-3 py-2 border-b border-[var(--qbt-border)] cursor-pointer transition-colors ${
+								className={`flex items-start gap-2 px-3 py-2 border-b border-[var(--qbt-border)] transition-colors ${
 									isSelected
 										? "bg-[var(--qbt-selected)]"
 										: isEven
 											? "hover:bg-[var(--qbt-bg-secondary)]"
-											: "bg-[var(--qbt-bg-secondary)] hover:bg-[var(--qbt-bg-tertiary)]"
+											: "bg-(--qbt-bg-secondary) hover:bg-[var(--qbt-bg-tertiary)]"
 								}`}
 							>
 								{/* Checkbox / status icon */}
 								<button
 									type="button"
-									onClick={(e) => {
-										e.stopPropagation();
-										row.toggleSelected();
-									}}
-									className="flex-shrink-0 flex items-center justify-center w-6 h-6 mt-0.5 rounded hover:bg-[var(--qbt-bg-tertiary)] transition-colors"
+									onClick={() => row.toggleSelected()}
+									className="shrink-0 flex items-center justify-center w-6 h-6 mt-0.5 rounded hover:bg-(--qbt-bg-tertiary) transition-colors"
 								>
 									{isChecked ? (
 										<input
 											type="checkbox"
 											checked
 											readOnly
-											className="cursor-pointer accent-[var(--qbt-accent)] pointer-events-none"
+											className="cursor-pointer accent-(--qbt-accent) pointer-events-none"
 										/>
 									) : (
 										<StatusIcon state={torrent.State}/>
@@ -478,7 +476,11 @@ export default function TorrentTable({
 								</button>
 
 								{/* 3-row content */}
-								<div className="flex-1 min-w-0 flex flex-col gap-1">
+								<button
+									type="button"
+									onClick={() => onTorrentSelect(torrent.InfoHashV1)}
+									className="flex-1 min-w-0 flex flex-col gap-1 text-left cursor-pointer"
+								>
 									{/* Row 1: Name — wraps */}
 									<div className="text-sm text-[var(--qbt-text-primary)] leading-snug break-words">
 										{torrent.Name}
@@ -507,7 +509,7 @@ export default function TorrentTable({
 											</span>
 										</div>
 									)}
-								</div>
+								</button>
 							</div>
 						);
 					})}
@@ -543,10 +545,35 @@ export default function TorrentTable({
 											</div>
 										)}
 									</button>
-									{/* biome-ignore lint/a11y/noStaticElementInteractions: Column resize handle is a standard table UI pattern */}
 									<div
+										role="slider"
+										aria-label={`Resize ${header.column.id} column`}
+										aria-orientation="horizontal"
+										aria-valuemin={50}
+										aria-valuemax={600}
+										aria-valuenow={header.column.getSize()}
+										tabIndex={0}
 										onMouseDown={header.getResizeHandler()}
 										onTouchStart={header.getResizeHandler()}
+										onKeyDown={(e) => {
+											const delta =
+												e.key === "ArrowRight"
+													? 10
+													: e.key === "ArrowLeft"
+														? -10
+														: 0;
+											if (delta) {
+												e.preventDefault();
+												table.setColumnSizing((prev) => ({
+													...prev,
+													[header.column.id]: Math.max(
+														50,
+														(prev[header.column.id] ??
+															header.column.getSize()) + delta,
+													),
+												}));
+											}
+										}}
 										className={`absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none hidden md:block ${
 											header.column.getIsResizing()
 												? "bg-[var(--qbt-accent)] opacity-100"

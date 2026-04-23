@@ -1,8 +1,9 @@
 import {Filter, FolderPlus, Pause, Play, Plus, RotateCcw, Search, Trash2, Upload,} from "lucide-react";
-import {useEffect, useRef, useState} from "react";
-import UploadTorrentModal from "./UploadTorrentModal";
-import DeleteConfirmModal from "./DeleteConfirmModal";
+import {lazy, Suspense, useEffect, useRef, useState} from "react";
 import {usePauseTorrents, useResumeTorrents,} from "../hooks/useTorrentMutations";
+
+const UploadTorrentModal = lazy(() => import("./UploadTorrentModal"));
+const DeleteConfirmModal = lazy(() => import("./DeleteConfirmModal"));
 
 export default function Toolbar({
                                     searchQuery,
@@ -185,17 +186,21 @@ export default function Toolbar({
                     </button>
                 </div>
             )}
-            <UploadTorrentModal
-                isOpen={isUploadModalOpen}
-                onClose={() => setIsUploadModalOpen(false)}
-            />
-            <DeleteConfirmModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                torrents={selectedTorrents ?? []}
-                onDeleted={() => {
-                }}
-            />
+            <Suspense fallback={null}>
+                <UploadTorrentModal
+                    isOpen={isUploadModalOpen}
+                    onClose={() => setIsUploadModalOpen(false)}
+                />
+            </Suspense>
+            <Suspense fallback={null}>
+                <DeleteConfirmModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    torrents={selectedTorrents ?? []}
+                    onDeleted={() => {
+                    }}
+                />
+            </Suspense>
         </>
     );
 }

@@ -92,10 +92,14 @@ export default function CreateCategoryModal({
 
                     <form onSubmit={handleSubmit} className="p-4 space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-[var(--qbt-text-primary)] mb-1">
+                            <label
+                                htmlFor="category-name"
+                                className="block text-sm font-medium text-[var(--qbt-text-primary)] mb-1"
+                            >
                                 Name <span className="text-red-400">*</span>
                             </label>
                             <input
+                                id="category-name"
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
@@ -106,10 +110,14 @@ export default function CreateCategoryModal({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-[var(--qbt-text-primary)] mb-1">
+                            <label
+                                htmlFor="category-path"
+                                className="block text-sm font-medium text-[var(--qbt-text-primary)] mb-1"
+                            >
                                 Path
                             </label>
                             <input
+                                id="category-path"
                                 type="text"
                                 value={path}
                                 onChange={(e) => setPath(e.target.value)}
@@ -119,11 +127,15 @@ export default function CreateCategoryModal({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-[var(--qbt-text-primary)] mb-1">
+                            <label
+                                htmlFor="category-server"
+                                className="block text-sm font-medium text-[var(--qbt-text-primary)] mb-1"
+                            >
                                 Server <span className="text-red-400">*</span>
                             </label>
                             <div ref={serverDropdownRef} className="relative">
                                 <button
+                                    id="category-server"
                                     type="button"
                                     onClick={() => setIsServerDropdownOpen((v) => !v)}
                                     className="w-full px-3 py-2 bg-[var(--qbt-bg-primary)] border border-[var(--qbt-border)] rounded text-[var(--qbt-text-primary)] focus:outline-none focus:border-[var(--qbt-accent)] transition-colors flex items-center justify-between"

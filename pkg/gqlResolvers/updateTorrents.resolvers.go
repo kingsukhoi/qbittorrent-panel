@@ -15,7 +15,6 @@ import (
 
 // CreateCategory is the resolver for the createCategory field.
 func (r *mutationResolver) CreateCategory(ctx context.Context, args gqlGenerated.CreateCategoryArgs) (*gqlGenerated.CreateCategoryResult, error) {
-
 	client, found := qbClient.Registry().Get(args.Server)
 	if !found {
 		return nil, errors.New("client not found")

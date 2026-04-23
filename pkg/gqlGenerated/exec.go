@@ -72,13 +72,20 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Categories func(childComplexity int) int
-		Torrent    func(childComplexity int, infoHashV1 string) int
-		Torrents   func(childComplexity int, categories []string, servers []string) int
+		Categories      func(childComplexity int) int
+		Torrent         func(childComplexity int, infoHashV1 string) int
+		Torrents        func(childComplexity int, categories []string, servers []string) int
+		TorrentsSyncAPI func(childComplexity int, args TorrentSyncAPIArgs) int
 	}
 
 	ResumeTorrentsResults struct {
 		Success func(childComplexity int) int
+	}
+
+	SyncApiResults struct {
+		Categories func(childComplexity int) int
+		Torrents   func(childComplexity int) int
+		Trackers   func(childComplexity int) int
 	}
 
 	Torrent struct {
@@ -120,6 +127,7 @@ type QueryResolver interface {
 	Torrents(ctx context.Context, categories []string, servers []string) ([]Torrent, error)
 	Categories(ctx context.Context) ([]Category, error)
 	Torrent(ctx context.Context, infoHashV1 string) ([]*Torrent, error)
+	TorrentsSyncAPI(ctx context.Context, args TorrentSyncAPIArgs) (*SyncAPIResults, error)
 }
 type TorrentResolver interface {
 	Trackers(ctx context.Context, obj *Torrent) ([]Tracker, error)
@@ -304,6 +312,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Torrents(childComplexity, args["categories"].([]string), args["servers"].([]string)), true
+	case "Query.TorrentsSyncApi":
+		if e.ComplexityRoot.Query.TorrentsSyncAPI == nil {
+			break
+		}
+
+		args, err := ec.field_Query_TorrentsSyncApi_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.TorrentsSyncAPI(childComplexity, args["args"].(TorrentSyncAPIArgs)), true
 
 	case "ResumeTorrentsResults.Success":
 		if e.ComplexityRoot.ResumeTorrentsResults.Success == nil {
@@ -311,6 +330,25 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.ResumeTorrentsResults.Success(childComplexity), true
+
+	case "SyncApiResults.Categories":
+		if e.ComplexityRoot.SyncApiResults.Categories == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SyncApiResults.Categories(childComplexity), true
+	case "SyncApiResults.Torrents":
+		if e.ComplexityRoot.SyncApiResults.Torrents == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SyncApiResults.Torrents(childComplexity), true
+	case "SyncApiResults.Trackers":
+		if e.ComplexityRoot.SyncApiResults.Trackers == nil {
+			break
+		}
+
+		return e.ComplexityRoot.SyncApiResults.Trackers(childComplexity), true
 
 	case "Torrent.AddedOn":
 		if e.ComplexityRoot.Torrent.AddedOn == nil {
@@ -461,6 +499,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPauseTorrentsArgs,
 		ec.unmarshalInputResumeTorrentInfo,
 		ec.unmarshalInputResumeTorrentsArgs,
+		ec.unmarshalInputTorrentSyncApiArgs,
 	)
 	first := true
 
@@ -588,6 +627,20 @@ type Query {
     Categories: [Category!]!
     Torrent(infoHashV1:String!): [Torrent]!
 }`, BuiltIn: false},
+	{Name: "../../graph/syncApi.graphqls", Input: `input TorrentSyncApiArgs{
+    rid: Int
+}
+
+
+type SyncApiResults{
+    Categories: [Category!]
+    Torrents: [Torrent!]
+    Trackers: [Tracker!]
+}
+
+extend type Query {
+    TorrentsSyncApi(args:TorrentSyncApiArgs!):SyncApiResults!
+}`, BuiltIn: false},
 	{Name: "../../graph/updateTorrents.graphqls", Input: `input CreateCategoryArgs {
     Name: String!
     Path: String!
@@ -703,6 +756,17 @@ func (ec *executionContext) field_Query_Torrent_args(ctx context.Context, rawArg
 		return nil, err
 	}
 	args["infoHashV1"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_TorrentsSyncApi_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "args", ec.unmarshalNTorrentSyncApiArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentSyncAPIArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["args"] = arg0
 	return args, nil
 }
 
@@ -1550,6 +1614,55 @@ func (ec *executionContext) fieldContext_Query_Torrent(ctx context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_TorrentsSyncApi(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_Query_TorrentsSyncApi,
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().TorrentsSyncAPI(ctx, fc.Args["args"].(TorrentSyncAPIArgs))
+		},
+		nil,
+		ec.marshalNSyncApiResults2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐSyncAPIResults,
+		true,
+		true,
+	)
+}
+
+func (ec *executionContext) fieldContext_Query_TorrentsSyncApi(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Categories":
+				return ec.fieldContext_SyncApiResults_Categories(ctx, field)
+			case "Torrents":
+				return ec.fieldContext_SyncApiResults_Torrents(ctx, field)
+			case "Trackers":
+				return ec.fieldContext_SyncApiResults_Trackers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SyncApiResults", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_TorrentsSyncApi_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -1682,6 +1795,149 @@ func (ec *executionContext) fieldContext_ResumeTorrentsResults_Success(_ context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SyncApiResults_Categories(ctx context.Context, field graphql.CollectedField, obj *SyncAPIResults) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SyncApiResults_Categories,
+		func(ctx context.Context) (any, error) {
+			return obj.Categories, nil
+		},
+		nil,
+		ec.marshalOCategory2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategoryᚄ,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_SyncApiResults_Categories(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SyncApiResults",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Name":
+				return ec.fieldContext_Category_Name(ctx, field)
+			case "Path":
+				return ec.fieldContext_Category_Path(ctx, field)
+			case "Servers":
+				return ec.fieldContext_Category_Servers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Category", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SyncApiResults_Torrents(ctx context.Context, field graphql.CollectedField, obj *SyncAPIResults) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SyncApiResults_Torrents,
+		func(ctx context.Context) (any, error) {
+			return obj.Torrents, nil
+		},
+		nil,
+		ec.marshalOTorrent2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentᚄ,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_SyncApiResults_Torrents(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SyncApiResults",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Server":
+				return ec.fieldContext_Torrent_Server(ctx, field)
+			case "Name":
+				return ec.fieldContext_Torrent_Name(ctx, field)
+			case "Category":
+				return ec.fieldContext_Torrent_Category(ctx, field)
+			case "Ratio":
+				return ec.fieldContext_Torrent_Ratio(ctx, field)
+			case "InfoHashV1":
+				return ec.fieldContext_Torrent_InfoHashV1(ctx, field)
+			case "Comment":
+				return ec.fieldContext_Torrent_Comment(ctx, field)
+			case "RootPath":
+				return ec.fieldContext_Torrent_RootPath(ctx, field)
+			case "SavePath":
+				return ec.fieldContext_Torrent_SavePath(ctx, field)
+			case "SizeBytes":
+				return ec.fieldContext_Torrent_SizeBytes(ctx, field)
+			case "Trackers":
+				return ec.fieldContext_Torrent_Trackers(ctx, field)
+			case "TrackerUrl":
+				return ec.fieldContext_Torrent_TrackerUrl(ctx, field)
+			case "Files":
+				return ec.fieldContext_Torrent_Files(ctx, field)
+			case "AddedOn":
+				return ec.fieldContext_Torrent_AddedOn(ctx, field)
+			case "State":
+				return ec.fieldContext_Torrent_State(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Torrent", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SyncApiResults_Trackers(ctx context.Context, field graphql.CollectedField, obj *SyncAPIResults) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		ec.fieldContext_SyncApiResults_Trackers,
+		func(ctx context.Context) (any, error) {
+			return obj.Trackers, nil
+		},
+		nil,
+		ec.marshalOTracker2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTrackerᚄ,
+		true,
+		false,
+	)
+}
+
+func (ec *executionContext) fieldContext_SyncApiResults_Trackers(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SyncApiResults",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Tier":
+				return ec.fieldContext_Tracker_Tier(ctx, field)
+			case "Url":
+				return ec.fieldContext_Tracker_Url(ctx, field)
+			case "Status":
+				return ec.fieldContext_Tracker_Status(ctx, field)
+			case "Peers":
+				return ec.fieldContext_Tracker_Peers(ctx, field)
+			case "Seeds":
+				return ec.fieldContext_Tracker_Seeds(ctx, field)
+			case "Leeches":
+				return ec.fieldContext_Tracker_Leeches(ctx, field)
+			case "TimesDownloaded":
+				return ec.fieldContext_Tracker_TimesDownloaded(ctx, field)
+			case "Message":
+				return ec.fieldContext_Tracker_Message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tracker", field.Name)
 		},
 	}
 	return fc, nil
@@ -4063,6 +4319,36 @@ func (ec *executionContext) unmarshalInputResumeTorrentsArgs(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTorrentSyncApiArgs(ctx context.Context, obj any) (TorrentSyncAPIArgs, error) {
+	var it TorrentSyncAPIArgs
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"rid"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "rid":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rid"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Rid = data
+		}
+	}
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -4466,6 +4752,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "TorrentsSyncApi":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_TorrentsSyncApi(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -4513,6 +4821,46 @@ func (ec *executionContext) _ResumeTorrentsResults(ctx context.Context, sel ast.
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.Deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.ProcessDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var syncApiResultsImplementors = []string{"SyncApiResults"}
+
+func (ec *executionContext) _SyncApiResults(ctx context.Context, sel ast.SelectionSet, obj *SyncAPIResults) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, syncApiResultsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SyncApiResults")
+		case "Categories":
+			out.Values[i] = ec._SyncApiResults_Categories(ctx, field, obj)
+		case "Torrents":
+			out.Values[i] = ec._SyncApiResults_Torrents(ctx, field, obj)
+		case "Trackers":
+			out.Values[i] = ec._SyncApiResults_Trackers(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5412,6 +5760,20 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
+func (ec *executionContext) marshalNSyncApiResults2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐSyncAPIResults(ctx context.Context, sel ast.SelectionSet, v SyncAPIResults) graphql.Marshaler {
+	return ec._SyncApiResults(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSyncApiResults2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐSyncAPIResults(ctx context.Context, sel ast.SelectionSet, v *SyncAPIResults) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SyncApiResults(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNTorrent2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx context.Context, sel ast.SelectionSet, v Torrent) graphql.Marshaler {
 	return ec._Torrent(ctx, sel, &v)
 }
@@ -5440,6 +5802,11 @@ func (ec *executionContext) marshalNTorrent2ᚕᚖgithubᚗcomᚋkingsukhoiᚋqb
 	})
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNTorrentSyncApiArgs2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentSyncAPIArgs(ctx context.Context, v any) (TorrentSyncAPIArgs, error) {
+	res, err := ec.unmarshalInputTorrentSyncApiArgs(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNTracker2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTracker(ctx context.Context, sel ast.SelectionSet, v Tracker) graphql.Marshaler {
@@ -5633,12 +6000,49 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalOCategory2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategoryᚄ(ctx context.Context, sel ast.SelectionSet, v []Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNCategory2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐCategory(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalODeleteTorrentInfo2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐDeleteTorrentInfo(ctx context.Context, v any) (*DeleteTorrentInfo, error) {
 	if v == nil {
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputDeleteTorrentInfo(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalInt(*v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOPauseTorrentInfo2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐPauseTorrentInfo(ctx context.Context, v any) (*PauseTorrentInfo, error) {
@@ -5711,11 +6115,49 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
+func (ec *executionContext) marshalOTorrent2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrentᚄ(ctx context.Context, sel ast.SelectionSet, v []Torrent) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNTorrent2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalOTorrent2ᚖgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTorrent(ctx context.Context, sel ast.SelectionSet, v *Torrent) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Torrent(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOTracker2ᚕgithubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTrackerᚄ(ctx context.Context, sel ast.SelectionSet, v []Tracker) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNTracker2githubᚗcomᚋkingsukhoiᚋqbitorrentᚑpanelᚋpkgᚋgqlGeneratedᚐTracker(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

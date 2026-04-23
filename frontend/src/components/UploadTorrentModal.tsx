@@ -96,8 +96,8 @@ export default function UploadTorrentModal({
         }
     };
 
-    const removeFile = (index: number) => {
-        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    const removeFile = (name: string) => {
+        setSelectedFiles((prev) => prev.filter((f) => f.name !== name));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -191,9 +191,9 @@ export default function UploadTorrentModal({
                             />
                             {selectedFiles.length > 0 ? (
                                 <div className="space-y-2">
-                                    {selectedFiles.map((file, index) => (
+                                    {selectedFiles.map((file) => (
                                         <div
-                                            key={`${file.name}-${index}`}
+                                            key={file.name}
                                             className="flex items-center justify-between p-2 bg-[var(--qbt-bg-tertiary)] rounded"
                                         >
                                             <div className="text-left overflow-hidden">
@@ -208,7 +208,7 @@ export default function UploadTorrentModal({
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    removeFile(index);
+                                                    removeFile(file.name);
                                                 }}
                                                 className="p-1 hover:text-red-400 transition-colors"
                                             >
