@@ -13,20 +13,20 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.10",
-    "@tailwindcss/vite": "^4.2.2",
+    "@tailwindcss/vite": "^4.2.4",
     "@tanstack/react-devtools": "^0.10.2",
-    "@tanstack/react-query": "^5.99.2",
-    "@tanstack/react-router": "^1.168.22",
+    "@tanstack/react-query": "^5.100.1",
+    "@tanstack/react-router": "^1.168.23",
     "@tanstack/react-router-devtools": "^1.166.13",
     "@tanstack/react-table": "^8.21.3",
     "graphql": "^16.13.2",
     "graphql-request": "^7.4.0",
     "linkify-react": "^4.3.2",
     "linkifyjs": "^4.3.2",
-    "lucide-react": "^1.8.0",
+    "lucide-react": "^1.9.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "tailwindcss": "^4.2.2"
+    "tailwindcss": "^4.2.4"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.11",
@@ -41,8 +41,8 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "jsdom": "^29.0.2",
     "typescript": "^6.0.3",
-    "vite": "^8.0.8",
-    "vitest": "^4.1.4"
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5"
   },
   "packageManager": "pnpm@10.29.3+sha512.498e1fb4cca5aa06c1dcf2611e6fafc50972ffe7189998c409e90de74566444298ffe43e6cd2acdc775ba1aa7cc5e092a8b7054c811ba8c5770f84693d33d2dc"
 }
