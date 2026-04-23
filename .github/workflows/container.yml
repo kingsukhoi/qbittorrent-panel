@@ -52,9 +52,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - id: setup-tools
-        uses: buildpacks/github-actions/setup-tools@v5
+        uses: buildpacks/github-actions/setup-tools@v5.12.0
       - id: setup-pack
-        uses: buildpacks/github-actions/setup-pack@v5
+        uses: buildpacks/github-actions/setup-pack@v5.12.0
       - name: Get Short SHA
         id: shortsha
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
