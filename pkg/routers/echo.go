@@ -30,6 +30,7 @@ func NewEchoHandler(gqlHandler *handler.Server) *echo.Echo {
 
 	// Health check endpoint
 	e.GET("/health", httpHandlers.HealthCheck)
+	e.GET("/healthz", httpHandlers.HealthCheck)
 
 	e.POST("/uploadTorrent", httpHandlers.TorrentUpload)
 
