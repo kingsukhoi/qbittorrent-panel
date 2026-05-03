@@ -7,7 +7,7 @@ require (
 	github.com/alecthomas/kong v1.15.0
 	github.com/alecthomas/kong-yaml v0.2.0
 	github.com/jedib0t/go-pretty/v6 v6.7.10
-	github.com/labstack/echo/v5 v5.1.0
+	github.com/labstack/echo/v5 v5.1.1
 	github.com/vektah/gqlparser/v2 v2.5.33
 )
 
