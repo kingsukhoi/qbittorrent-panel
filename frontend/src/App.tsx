@@ -1,16 +1,12 @@
 import {QueryClientProvider} from "@tanstack/react-query";
 import {queryClient} from "./lib/queryClient";
-import {lazy, Suspense, useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import Toolbar from "./components/Toolbar";
 import Sidebar from "./components/Sidebar";
 import TorrentTable from "./components/TorrentTable";
 import DetailsPanel from "./components/DetailsPanel";
 import {useTorrents} from "./hooks/useTorrents";
 import type {Torrent} from "./types";
-
-const CreateCategoryModal = lazy(
-	() => import("./components/CreateCategoryModal"),
-);
 
 function QBittorrentPanel() {
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -27,13 +23,12 @@ function QBittorrentPanel() {
 	const [detailsHeight, setDetailsHeight] = useState(256);
 	const [isResizingSidebar, setIsResizingSidebar] = useState(false);
 	const [isResizingDetails, setIsResizingDetails] = useState(false);
-	const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
 	const [selectedTorrents, setSelectedTorrents] = useState<Torrent[]>([]);
 	const [sortResetKey, setSortResetKey] = useState(0);
 	const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false);
 	const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
-	const {data: torrentsData} = useTorrents({
+	const { data: torrentsData } = useTorrents({
 		categories: selectedCategory ? [selectedCategory] : undefined,
 		servers: selectedServer ? [selectedServer] : undefined,
 	});
@@ -90,7 +85,6 @@ function QBittorrentPanel() {
 			<Toolbar
 				searchQuery={searchQuery}
 				onSearchChange={setSearchQuery}
-				onAddCategory={() => setIsCreateCategoryOpen(true)}
 				onResetSort={() => setSortResetKey((k) => k + 1)}
 				selectedTorrents={selectedTorrents}
 				onOpenSidebar={() => setIsSidebarDrawerOpen(true)}
@@ -146,12 +140,6 @@ function QBittorrentPanel() {
 					/>
 				</div>
 			</div>
-			<Suspense fallback={null}>
-				<CreateCategoryModal
-					isOpen={isCreateCategoryOpen}
-					onClose={() => setIsCreateCategoryOpen(false)}
-				/>
-			</Suspense>
 		</div>
 	);
 }
@@ -159,7 +147,7 @@ function QBittorrentPanel() {
 function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<QBittorrentPanel/>
+			<QBittorrentPanel />
 		</QueryClientProvider>
 	);
 }

@@ -6,7 +6,10 @@
       "Bash(pnpm remove *)",
       "Bash(pnpm build *)",
       "Bash(pnpm check *)",
-      "Bash(pnpm biome *)"
+      "Bash(pnpm biome *)",
+      "Bash(pnpm format *)",
+      "Bash(pnpm tsc *)"
     ]
-  }
+  },
+  "spinnerTipsEnabled": false
 }
