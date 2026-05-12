@@ -68,7 +68,7 @@ func Login(ctx context.Context, login configuration.QbLogin) (*Client, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 204 {
 		body, _ := io.ReadAll(resp.Body)
 		return nil, errors.New(string(body))
 	}
