@@ -23,9 +23,8 @@ type Config struct {
 }
 
 type QbLogin struct {
-	Path     string `yaml:"path"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
+	Path   string `yaml:"path"`
+	ApiKey string `yaml:"apiKey"`
 }
 
 var once sync.Once
