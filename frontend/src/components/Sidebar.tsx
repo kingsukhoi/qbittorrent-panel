@@ -1,8 +1,19 @@
-import {useMemo, useState} from "react";
-import {Dialog, DialogPanel} from "@headlessui/react";
-import {ChevronDown, ChevronRight, Folder, FolderOpen, Plus, Radio, Server, ServerOff, Signal, X,} from "lucide-react";
-import {useTorrents} from "../hooks/useTorrents";
-import {useCategories} from "../hooks/useCategories";
+import { useMemo, useState } from "react";
+import { Dialog, DialogPanel } from "@headlessui/react";
+import {
+	ChevronDown,
+	ChevronRight,
+	Folder,
+	FolderOpen,
+	Plus,
+	Radio,
+	Server,
+	ServerOff,
+	Signal,
+	X,
+} from "lucide-react";
+import { useTorrents } from "../hooks/useTorrents";
+import { useCategories } from "../hooks/useCategories";
 import CreateCategoryModal from "./CreateCategoryModal";
 
 function SectionHeader({

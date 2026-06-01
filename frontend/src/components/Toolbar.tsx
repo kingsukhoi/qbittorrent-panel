@@ -1,6 +1,17 @@
-import {Filter, Pause, Play, Plus, RotateCcw, Search, Trash2,} from "lucide-react";
-import {lazy, Suspense, useState} from "react";
-import {usePauseTorrents, useResumeTorrents,} from "../hooks/useTorrentMutations";
+import {
+	Filter,
+	Pause,
+	Play,
+	Plus,
+	RotateCcw,
+	Search,
+	Trash2,
+} from "lucide-react";
+import { lazy, Suspense, useState } from "react";
+import {
+	usePauseTorrents,
+	useResumeTorrents,
+} from "../hooks/useTorrentMutations";
 
 const UploadTorrentModal = lazy(() => import("./UploadTorrentModal"));
 const DeleteConfirmModal = lazy(() => import("./DeleteConfirmModal"));

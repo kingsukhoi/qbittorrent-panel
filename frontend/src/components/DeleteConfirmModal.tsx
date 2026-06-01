@@ -1,6 +1,6 @@
-import {Dialog, DialogPanel, DialogTitle} from "@headlessui/react";
-import {useState} from "react";
-import {useDeleteTorrents} from "../hooks/useTorrentMutations";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useState } from "react";
+import { useDeleteTorrents } from "../hooks/useTorrentMutations";
 
 interface DeleteConfirmModalProps {
 	isOpen: boolean;

@@ -1,12 +1,12 @@
-import {QueryClientProvider} from "@tanstack/react-query";
-import {queryClient} from "./lib/queryClient";
-import {useEffect, useMemo, useState} from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
+import { useEffect, useMemo, useState } from "react";
 import Toolbar from "./components/Toolbar";
 import Sidebar from "./components/Sidebar";
 import TorrentTable from "./components/TorrentTable";
 import DetailsPanel from "./components/DetailsPanel";
-import {useTorrents} from "./hooks/useTorrents";
-import type {Torrent} from "./types";
+import { useTorrents } from "./hooks/useTorrents";
+import type { Torrent } from "./types";
 
 function QBittorrentPanel() {
 	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);

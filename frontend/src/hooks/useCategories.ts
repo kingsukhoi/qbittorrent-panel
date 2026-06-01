@@ -1,7 +1,7 @@
-import {useQuery} from "@tanstack/react-query";
-import {graphqlClient} from "../lib/graphqlClient";
-import {GET_CATEGORIES} from "../queries";
-import type {Category} from "../types";
+import { useQuery } from "@tanstack/react-query";
+import { graphqlClient } from "../lib/graphqlClient";
+import { GET_CATEGORIES } from "../queries";
+import type { Category } from "../types";
 
 export function useCategories() {
 	return useQuery({

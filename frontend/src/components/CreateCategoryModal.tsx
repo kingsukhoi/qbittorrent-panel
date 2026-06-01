@@ -1,8 +1,8 @@
-import {Dialog, DialogPanel, DialogTitle} from "@headlessui/react";
-import {ChevronDown, Search, X} from "lucide-react";
-import {useEffect, useRef, useState} from "react";
-import {useCreateCategory} from "../hooks/useTorrentMutations";
-import {useTorrents} from "../hooks/useTorrents";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { ChevronDown, Search, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useCreateCategory } from "../hooks/useTorrentMutations";
+import { useTorrents } from "../hooks/useTorrents";
 
 interface CreateCategoryModalProps {
 	isOpen: boolean;

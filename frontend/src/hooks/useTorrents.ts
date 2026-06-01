@@ -1,7 +1,7 @@
-import {useQuery} from "@tanstack/react-query";
-import {graphqlClient} from "../lib/graphqlClient";
-import {GET_TORRENTS} from "../queries";
-import type {Torrent} from "../types";
+import { useQuery } from "@tanstack/react-query";
+import { graphqlClient } from "../lib/graphqlClient";
+import { GET_TORRENTS } from "../queries";
+import type { Torrent } from "../types";
 
 interface TorrentsVariables {
 	categories?: string[];

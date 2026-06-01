@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	type ColumnSizingState,
 	createColumnHelper,
@@ -10,9 +10,18 @@ import {
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
-import {useTorrents} from "../hooks/useTorrents";
-import {AlertCircle, ArrowDown, ArrowDownUp, ArrowUp, Clock, HelpCircle, Pause, RefreshCw,} from "lucide-react";
-import type {Torrent} from "../types";
+import { useTorrents } from "../hooks/useTorrents";
+import {
+	AlertCircle,
+	ArrowDown,
+	ArrowDownUp,
+	ArrowUp,
+	Clock,
+	HelpCircle,
+	Pause,
+	RefreshCw,
+} from "lucide-react";
+import type { Torrent } from "../types";
 
 const defaultSorting: SortingState = [
 	{ id: "AddedOn", desc: true },

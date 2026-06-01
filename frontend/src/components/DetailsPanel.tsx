@@ -1,9 +1,9 @@
-import {useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import Linkify from "linkify-react";
-import {Dialog, DialogPanel} from "@headlessui/react";
-import {FileText, Info, List, RefreshCw, X} from "lucide-react";
-import type {Torrent, Tracker} from "../types";
-import {useTorrentTrackers} from "../hooks/useTorrentTrackers";
+import { Dialog, DialogPanel } from "@headlessui/react";
+import { FileText, Info, List, RefreshCw, X } from "lucide-react";
+import type { Torrent, Tracker } from "../types";
+import { useTorrentTrackers } from "../hooks/useTorrentTrackers";
 
 type Tab = "general" | "files" | "trackers";
 

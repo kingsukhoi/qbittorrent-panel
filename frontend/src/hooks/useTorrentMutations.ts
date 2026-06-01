@@ -1,6 +1,11 @@
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {graphqlClient} from "../lib/graphqlClient";
-import {CREATE_CATEGORY, DELETE_TORRENTS, PAUSE_TORRENTS, RESUME_TORRENTS,} from "../queries";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { graphqlClient } from "../lib/graphqlClient";
+import {
+	CREATE_CATEGORY,
+	DELETE_TORRENTS,
+	PAUSE_TORRENTS,
+	RESUME_TORRENTS,
+} from "../queries";
 
 interface TorrentRef {
 	Server: string;

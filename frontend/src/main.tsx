@@ -1,6 +1,12 @@
-import {StrictMode} from "react";
+import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import {createRootRoute, createRoute, createRouter, Outlet, RouterProvider,} from "@tanstack/react-router";
+import {
+	createRootRoute,
+	createRoute,
+	createRouter,
+	Outlet,
+	RouterProvider,
+} from "@tanstack/react-router";
 
 import "./styles.css";
 import App from "./App.tsx";

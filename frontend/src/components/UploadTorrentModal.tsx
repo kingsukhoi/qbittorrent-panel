@@ -1,8 +1,17 @@
-import {Dialog, DialogPanel, DialogTitle} from "@headlessui/react";
-import {Check, ChevronDown, Search, Upload, X} from "lucide-react";
-import {useEffect, useId, useRef, useState} from "react";
-import {useCategories} from "../hooks/useCategories";
-import {getApiUrl} from "../lib/api";
+import {
+	Combobox,
+	ComboboxButton,
+	ComboboxInput,
+	ComboboxOption,
+	ComboboxOptions,
+	Dialog,
+	DialogPanel,
+	DialogTitle,
+} from "@headlessui/react";
+import { Check, ChevronDown, Upload, X } from "lucide-react";
+import { useId, useRef, useState } from "react";
+import { useCategories } from "../hooks/useCategories";
+import { getApiUrl } from "../lib/api";
 
 interface UploadTorrentModalProps {
 	isOpen: boolean;
@@ -16,56 +25,22 @@ export default function UploadTorrentModal({
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [selectedCategory, setSelectedCategory] = useState<string>("");
 	const [isDragging, setIsDragging] = useState(false);
-	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-	const [searchQuery, setSearchQuery] = useState("");
+	const [query, setQuery] = useState("");
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const dropdownRef = useRef<HTMLDivElement>(null);
-	const searchInputRef = useRef<HTMLInputElement>(null);
-	const categoryId = useId();
+	const comboButtonRef = useRef<HTMLButtonElement>(null);
+	const categoryInputId = useId();
 
 	const { data: categoriesData } = useCategories();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	// Filter categories based on search query
+	const allCategories = categoriesData?.Categories ?? [];
 	const filteredCategories =
-		categoriesData?.Categories.filter((category) =>
-			category.Name.toLowerCase().includes(searchQuery.toLowerCase()),
-		) || [];
-
-	// Close dropdown when clicking outside
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setIsDropdownOpen(false);
-				setSearchQuery("");
-			}
-		};
-
-		if (isDropdownOpen) {
-			document.addEventListener("mousedown", handleClickOutside);
-		}
-
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, [isDropdownOpen]);
-
-	// Focus search input when dropdown opens
-	useEffect(() => {
-		if (isDropdownOpen && searchInputRef.current) {
-			searchInputRef.current.focus();
-		}
-	}, [isDropdownOpen]);
-
-	const handleCategorySelect = (category: string) => {
-		setSelectedCategory(category);
-		setIsDropdownOpen(false);
-		setSearchQuery("");
-	};
+		query === ""
+			? allCategories
+			: allCategories.filter((c) =>
+					c.Name.toLowerCase().includes(query.toLowerCase()),
+				);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = Array.from(e.target.files || []);
@@ -73,7 +48,6 @@ export default function UploadTorrentModal({
 		if (torrentFiles.length > 0) {
 			setSelectedFiles((prev) => [...prev, ...torrentFiles]);
 		}
-		// Reset the input value so the same file can be selected again
 		e.target.value = "";
 	};
 
@@ -112,11 +86,7 @@ export default function UploadTorrentModal({
 			for (const file of selectedFiles) {
 				formData.append("torrents", file);
 			}
-			if (selectedCategory) {
-				formData.append("category", selectedCategory);
-			} else {
-				formData.append("category", "");
-			}
+			formData.append("category", selectedCategory);
 
 			const response = await fetch(getApiUrl("/uploadTorrent"), {
 				method: "POST",
@@ -137,10 +107,6 @@ export default function UploadTorrentModal({
 		} finally {
 			setLoading(false);
 		}
-	};
-
-	const handleBrowseClick = () => {
-		fileInputRef.current?.click();
 	};
 
 	return (
@@ -174,7 +140,7 @@ export default function UploadTorrentModal({
 							onDragOver={handleDragOver}
 							onDragLeave={handleDragLeave}
 							onDrop={handleDrop}
-							onClick={handleBrowseClick}
+							onClick={() => fileInputRef.current?.click()}
 						>
 							<input
 								ref={fileInputRef}
@@ -234,100 +200,77 @@ export default function UploadTorrentModal({
 						{/* Category Selection */}
 						<div>
 							<label
-								htmlFor={categoryId}
+								htmlFor={categoryInputId}
 								className="block text-sm font-medium text-[var(--qbt-text-primary)] mb-2"
 							>
 								Category (Optional)
 							</label>
-							<div ref={dropdownRef} className="relative">
-								{/* Dropdown Button */}
-								<button
-									type="button"
-									onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-									className="w-full px-3 py-2 bg-[var(--qbt-bg-primary)] border border-[var(--qbt-border)] rounded text-[var(--qbt-text-primary)] focus:outline-none focus:border-[var(--qbt-accent)] transition-colors flex items-center justify-between"
-								>
-									<span
-										className={
-											selectedCategory ? "" : "text-[var(--qbt-text-secondary)]"
-										}
-									>
-										{selectedCategory || "No Category"}
-									</span>
-									<ChevronDown
-										size={20}
-										className={`transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+							<Combobox
+								value={selectedCategory}
+								onChange={(val) => setSelectedCategory(val ?? "")}
+								onClose={() => setQuery("")}
+							>
+								<div className="relative">
+									<ComboboxInput
+										id={categoryInputId}
+										displayValue={(val: string) => val}
+										onChange={(e) => setQuery(e.target.value)}
+										onClick={() => {
+											if (
+												!("open" in (comboButtonRef.current?.dataset ?? {}))
+											) {
+												comboButtonRef.current?.click();
+											}
+										}}
+										placeholder="No Category"
+										className="w-full px-3 py-2 pr-10 bg-[var(--qbt-bg-primary)] border border-[var(--qbt-border)] rounded text-[var(--qbt-text-primary)] placeholder:text-[var(--qbt-text-secondary)] focus:outline-none focus:border-[var(--qbt-accent)] transition-colors"
 									/>
-								</button>
-
-								{/* Dropdown Menu */}
-								{isDropdownOpen && (
-									<div className="absolute z-10 w-full mt-1 bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg shadow-xl max-h-64 overflow-hidden flex flex-col">
-										{/* Search Input */}
-										<div className="p-2 border-b border-[var(--qbt-border)]">
-											<div className="relative">
-												<Search
-													size={18}
-													className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--qbt-text-secondary)]"
-												/>
-												<input
-													ref={searchInputRef}
-													type="text"
-													value={searchQuery}
-													onChange={(e) => setSearchQuery(e.target.value)}
-													placeholder="Search categories..."
-													className="w-full pl-10 pr-3 py-2 bg-[var(--qbt-bg-primary)] border border-[var(--qbt-border)] rounded text-[var(--qbt-text-primary)] placeholder:text-[var(--qbt-text-secondary)] focus:outline-none focus:border-[var(--qbt-accent)] transition-colors"
-												/>
-											</div>
-										</div>
-
-										{/* Options List */}
-										<div className="overflow-y-auto">
-											{/* No Category Option */}
-											<button
-												type="button"
-												onClick={() => handleCategorySelect("")}
-												className="w-full px-3 py-2 text-left hover:bg-[var(--qbt-bg-tertiary)] transition-colors flex items-center justify-between group"
-											>
-												<span className="text-[var(--qbt-text-secondary)]">
-													No Category
-												</span>
-												{!selectedCategory && (
+									<ComboboxButton
+										ref={comboButtonRef}
+										className="group absolute inset-y-0 right-0 flex items-center px-2"
+									>
+										<ChevronDown
+											size={20}
+											className="text-[var(--qbt-text-secondary)] transition-transform group-data-[open]:rotate-180"
+										/>
+									</ComboboxButton>
+									<ComboboxOptions className="absolute z-10 w-full mt-1 bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg shadow-xl max-h-64 overflow-y-auto">
+										<ComboboxOption
+											value=""
+											className="group px-3 py-2 flex items-center justify-between cursor-pointer data-[focus]:bg-[var(--qbt-bg-tertiary)]"
+										>
+											<span className="text-[var(--qbt-text-secondary)]">
+												No Category
+											</span>
+											<Check
+												size={18}
+												className="text-[var(--qbt-accent)] invisible group-data-[selected]:visible"
+											/>
+										</ComboboxOption>
+										{filteredCategories.length > 0 ? (
+											filteredCategories.map((category) => (
+												<ComboboxOption
+													key={category.Name}
+													value={category.Name}
+													className="group px-3 py-2 flex items-center justify-between cursor-pointer data-[focus]:bg-[var(--qbt-bg-tertiary)]"
+												>
+													<span className="text-[var(--qbt-text-primary)]">
+														{category.Name}
+													</span>
 													<Check
 														size={18}
-														className="text-[var(--qbt-accent)]"
+														className="text-[var(--qbt-accent)] invisible group-data-[selected]:visible"
 													/>
-												)}
-											</button>
-
-											{/* Category Options */}
-											{filteredCategories.length > 0 ? (
-												filteredCategories.map((category) => (
-													<button
-														key={category.Name}
-														type="button"
-														onClick={() => handleCategorySelect(category.Name)}
-														className="w-full px-3 py-2 text-left hover:bg-[var(--qbt-bg-tertiary)] transition-colors flex items-center justify-between group"
-													>
-														<span className="text-[var(--qbt-text-primary)]">
-															{category.Name}
-														</span>
-														{selectedCategory === category.Name && (
-															<Check
-																size={18}
-																className="text-[var(--qbt-accent)]"
-															/>
-														)}
-													</button>
-												))
-											) : (
-												<div className="px-3 py-4 text-center text-[var(--qbt-text-secondary)] text-sm">
-													No categories found
-												</div>
-											)}
-										</div>
-									</div>
-								)}
-							</div>
+												</ComboboxOption>
+											))
+										) : (
+											<div className="px-3 py-4 text-center text-[var(--qbt-text-secondary)] text-sm">
+												No categories found
+											</div>
+										)}
+									</ComboboxOptions>
+								</div>
+							</Combobox>
 						</div>
 
 						{/* Error Message */}
