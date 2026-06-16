@@ -3,23 +3,23 @@ module github.com/kingsukhoi/qbitorrent-panel
 go 1.25.0
 
 require (
-	github.com/99designs/gqlgen v0.17.90
+	github.com/99designs/gqlgen v0.17.91
 	github.com/alecthomas/kong v1.15.0
 	github.com/alecthomas/kong-yaml v0.2.0
-	github.com/jedib0t/go-pretty/v6 v6.7.10
-	github.com/labstack/echo/v5 v5.1.1
-	github.com/vektah/gqlparser/v2 v2.5.33
+	github.com/jedib0t/go-pretty/v6 v6.8.1
+	github.com/labstack/echo/v5 v5.2.0
+	github.com/vektah/gqlparser/v2 v2.5.34
 )
 
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
+	github.com/coder/websocket v1.8.14 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/sosodev/duration v1.4.0 // indirect
 	github.com/urfave/cli/v3 v3.9.0 // indirect
