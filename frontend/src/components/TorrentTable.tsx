@@ -312,6 +312,20 @@ export default function TorrentTable({
 	}, [sortResetKey]);
 	const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+	useEffect(() => {
+		const currentIds = new Set(torrents.map((t) => t.InfoHashV1));
+		setRowSelection((prev) => {
+			const staleKeys = Object.keys(prev).filter((id) => !currentIds.has(id));
+			if (staleKeys.length === 0) return prev;
+			const next = { ...prev };
+			for (const id of staleKeys) delete next[id];
+			const selected = torrents.filter((t) => next[t.InfoHashV1]);
+			onSelectionChange?.(selected);
+			return next;
+		});
+	}, [torrents, onSelectionChange]);
+
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
 	const scrollPositionRef = useRef<number>(0);
 
