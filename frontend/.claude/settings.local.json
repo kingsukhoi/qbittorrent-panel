@@ -8,7 +8,8 @@
       "Bash(pnpm check *)",
       "Bash(pnpm biome *)",
       "Bash(pnpm format *)",
-      "Bash(pnpm tsc *)"
+      "Bash(pnpm tsc *)",
+      "Bash(pnpm exec *)"
     ]
   },
   "spinnerTipsEnabled": false
