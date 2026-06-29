@@ -52,14 +52,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - id: setup-tools
-        uses: buildpacks/github-actions/setup-tools@v5.12.4
+        uses: buildpacks/github-actions/setup-tools@v5.12.5
       - id: setup-pack
-        uses: buildpacks/github-actions/setup-pack@v5.12.4
+        uses: buildpacks/github-actions/setup-pack@v5.12.5
       - name: Get Short SHA
         id: shortsha
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ./pack-cache
           key: "${{ hashFiles('go.mod', 'go.sum') }}"
