@@ -16,6 +16,7 @@ on:
       - .github/dependabot.yml
       - README.md
       - frontend/README.md
+      - .github/workflows/rebase.yml
 
 jobs:
   build:
