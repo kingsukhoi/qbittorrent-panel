@@ -1,6 +1,11 @@
 name: Rebase Container
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/rebase.yml
   schedule:
     - cron: '0 0 * * 0'
   workflow_dispatch:
@@ -39,7 +44,6 @@ jobs:
           while IFS= read -r TAG; do
             TAG_DIGEST=$(crane digest "ghcr.io/${REPO}:${TAG}" 2>/dev/null || true)
             if [ "${TAG_DIGEST}" = "${DIGEST}" ]; then
-              pack rebase "ghcr.io/${REPO}:${TAG}" --publish \
-                --cache='type=build;format=bind;source=./pack-cache'
+              pack rebase "ghcr.io/${REPO}:${TAG}" --publish 
             fi
           done < <(crane ls "ghcr.io/${REPO}")
