@@ -31,11 +31,6 @@ jobs:
         uses: buildpacks/github-actions/setup-tools@v5.12.4
       - id: setup-pack
         uses: buildpacks/github-actions/setup-pack@v5.12.4
-      - name: Cache
-        uses: actions/cache@v5
-        with:
-          path: ./pack-cache
-          key: rebase-cache
       - name: Rebase all tags
         env:
           REPO: ${{ github.repository }}
@@ -47,3 +42,12 @@ jobs:
               pack rebase "ghcr.io/${REPO}:${TAG}" --publish 
             fi
           done < <(crane ls "ghcr.io/${REPO}")
+      - uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          packages: ${REPO}
+          delete-orphaned-images: true
+          delete-ghost-images: true
+          delete-untagged: true
+          exclude-tags: 'latest'
+          keep-n-tagged: 10
+          dry-run: true
