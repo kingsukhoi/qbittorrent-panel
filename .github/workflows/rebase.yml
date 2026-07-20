@@ -44,7 +44,7 @@ jobs:
           done < <(crane ls "ghcr.io/${REPO}")
       - uses: dataaxiom/ghcr-cleanup-action@v1
         with:
-          packages: "${{ github.repository }}"
+          packages: "${{ github.event.repository.name }}"
           delete-orphaned-images: true
           delete-ghost-images: true
           delete-untagged: true
