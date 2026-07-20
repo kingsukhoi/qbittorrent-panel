@@ -12,6 +12,9 @@ on:
 
 jobs:
   rebase:
+    concurrency:
+      group: "rebase-container"
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     permissions:
       packages: write
