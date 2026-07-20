@@ -50,4 +50,3 @@ jobs:
           delete-untagged: true
           exclude-tags: 'latest'
           keep-n-tagged: 10
-          dry-run: true
