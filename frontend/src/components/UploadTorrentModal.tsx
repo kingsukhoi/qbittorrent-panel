@@ -234,7 +234,11 @@ export default function UploadTorrentModal({
 											className="text-[var(--qbt-text-secondary)] transition-transform group-data-[open]:rotate-180"
 										/>
 									</ComboboxButton>
-									<ComboboxOptions className="absolute z-10 w-full mt-1 bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg shadow-xl max-h-64 overflow-y-auto">
+									<ComboboxOptions
+										anchor="bottom start"
+										transition
+										className="z-50 w-[var(--input-width)] [--anchor-gap:4px] bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg shadow-xl max-h-64 overflow-y-auto empty:invisible transition duration-100 ease-in data-[leave]:opacity-0"
+									>
 										<ComboboxOption
 											value=""
 											className="group px-3 py-2 flex items-center justify-between cursor-pointer data-[focus]:bg-[var(--qbt-bg-tertiary)]"

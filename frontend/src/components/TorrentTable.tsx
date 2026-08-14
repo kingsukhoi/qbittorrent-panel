@@ -1,14 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+	columnResizingFeature,
+	columnSizingFeature,
 	type ColumnSizingState,
+	columnVisibilityFeature,
 	createColumnHelper,
+	createSortedRowModel,
 	flexRender,
-	getCoreRowModel,
-	getSortedRowModel,
 	type OnChangeFn,
+	rowSelectionFeature,
 	type RowSelectionState,
+	rowSortingFeature,
 	type SortingState,
-	useReactTable,
+	tableFeatures,
+	useTable,
 } from "@tanstack/react-table";
 import { useTorrents } from "../hooks/useTorrents";
 import {
@@ -100,9 +105,18 @@ function getProgress(torrent: Torrent): number {
 	return totalProgress / torrent.Files.length;
 }
 
-const columnHelper = createColumnHelper<Torrent>();
+const features = tableFeatures({
+	rowSortingFeature,
+	rowSelectionFeature,
+	columnSizingFeature,
+	columnResizingFeature,
+	columnVisibilityFeature,
+	sortedRowModel: createSortedRowModel(),
+});
 
-const columns = [
+const columnHelper = createColumnHelper<typeof features, Torrent>();
+
+const columns = columnHelper.columns([
 	columnHelper.accessor("State", {
 		header: ({ table }) => {
 			const selectedCount = table.getSelectedRowModel().rows.length;
@@ -112,7 +126,10 @@ const columns = [
 						type="checkbox"
 						checked={table.getIsAllRowsSelected()}
 						ref={(el) => {
-							if (el) el.indeterminate = table.getIsSomeRowsSelected();
+							if (el)
+								el.indeterminate =
+									table.getIsSomeRowsSelected() &&
+									!table.getIsAllRowsSelected();
 						}}
 						onChange={() =>
 							table.toggleAllRowsSelected(
@@ -223,7 +240,7 @@ const columns = [
 			</div>
 		),
 	}),
-];
+]);
 
 export default function TorrentTable({
 	selectedCategory,
@@ -353,7 +370,8 @@ export default function TorrentTable({
 		});
 	};
 
-	const table = useReactTable({
+	const table = useTable({
+		features,
 		data: torrents,
 		columns,
 		state: {
@@ -372,8 +390,6 @@ export default function TorrentTable({
 				return next;
 			});
 		},
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
 		columnResizeMode: "onChange",
 		enableRowSelection: true,
 		getRowId: (row) => row.InfoHashV1,
