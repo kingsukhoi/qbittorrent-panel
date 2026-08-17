@@ -33,9 +33,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - id: setup-tools
-        uses: buildpacks/github-actions/setup-tools@v6.0.1
+        uses: buildpacks/github-actions/setup-tools@v6.1.0
       - id: setup-pack
-        uses: buildpacks/github-actions/setup-pack@v6.0.1
+        uses: buildpacks/github-actions/setup-pack@v6.1.0
       - name: Rebase all tags
         env:
           REPO: ${{ github.repository }}
