@@ -12,6 +12,7 @@ on:
 
 jobs:
   rebase:
+    if: github.event_name != 'push' || github.actor != 'dependabot[bot]'
     concurrency:
       group: "rebase-container"
       cancel-in-progress: true
