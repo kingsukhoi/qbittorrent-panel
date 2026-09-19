@@ -113,8 +113,8 @@ export default function UploadTorrentModal({
 		<Dialog open={isOpen} onClose={onClose} className="relative z-50">
 			<div className="fixed inset-0 bg-black/50" aria-hidden="true" />
 			<div className="fixed inset-0 flex items-center justify-center">
-				<DialogPanel className="bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg w-full max-w-md shadow-xl">
-					<div className="flex items-center justify-between p-4 border-b border-[var(--qbt-border)]">
+				<DialogPanel className="bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg w-full max-w-md shadow-xl max-h-[85vh] flex flex-col">
+					<div className="flex items-center justify-between p-4 border-b border-[var(--qbt-border)] flex-shrink-0">
 						<DialogTitle className="text-lg font-semibold text-[var(--qbt-text-primary)]">
 							Upload Torrent
 						</DialogTitle>
@@ -128,34 +128,55 @@ export default function UploadTorrentModal({
 					</div>
 
 					{/* Body */}
-					<form onSubmit={handleSubmit} className="p-4 space-y-4">
-						{/* File Drop Zone */}
-						<button
-							type="button"
-							className={`w-full border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-								isDragging
-									? "border-[var(--qbt-accent)] bg-[var(--qbt-accent)]/10"
-									: "border-[var(--qbt-border)] hover:border-[var(--qbt-accent)]/50"
-							}`}
-							onDragOver={handleDragOver}
-							onDragLeave={handleDragLeave}
-							onDrop={handleDrop}
-							onClick={() => fileInputRef.current?.click()}
-						>
-							<input
-								ref={fileInputRef}
-								type="file"
-								multiple
-								accept=".torrent"
-								onChange={handleFileChange}
-								className="hidden"
-							/>
-							<Upload
-								size={48}
-								className="mx-auto mb-4 text-[var(--qbt-text-secondary)]"
-							/>
-							{selectedFiles.length > 0 ? (
-								<div className="space-y-2">
+					<form
+						onSubmit={handleSubmit}
+						className="flex flex-col flex-1 min-h-0"
+					>
+						<div className="p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+							{/* File Drop Zone */}
+							<button
+								type="button"
+								className={`w-full border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+									isDragging
+										? "border-[var(--qbt-accent)] bg-[var(--qbt-accent)]/10"
+										: "border-[var(--qbt-border)] hover:border-[var(--qbt-accent)]/50"
+								}`}
+								onDragOver={handleDragOver}
+								onDragLeave={handleDragLeave}
+								onDrop={handleDrop}
+								onClick={() => fileInputRef.current?.click()}
+							>
+								<input
+									ref={fileInputRef}
+									type="file"
+									multiple
+									accept=".torrent"
+									onChange={handleFileChange}
+									className="hidden"
+								/>
+								<Upload
+									size={48}
+									className="mx-auto mb-4 text-[var(--qbt-text-secondary)]"
+								/>
+								{selectedFiles.length > 0 ? (
+									<span className="text-[var(--qbt-accent)] text-sm">
+										Click or drop more files to add
+									</span>
+								) : (
+									<>
+										<p className="text-[var(--qbt-text-primary)] mb-2">
+											Drop torrent files here or click to browse
+										</p>
+										<p className="text-[var(--qbt-text-secondary)] text-sm">
+											Only .torrent files are supported
+										</p>
+									</>
+								)}
+							</button>
+
+							{/* Selected Files */}
+							{selectedFiles.length > 0 && (
+								<div className="space-y-2 max-h-48 overflow-y-auto pr-1">
 									{selectedFiles.map((file) => (
 										<div
 											key={file.name}
@@ -171,121 +192,106 @@ export default function UploadTorrentModal({
 											</div>
 											<button
 												type="button"
-												onClick={(e) => {
-													e.stopPropagation();
-													removeFile(file.name);
-												}}
+												onClick={() => removeFile(file.name)}
 												className="p-1 hover:text-red-400 transition-colors"
 											>
 												<X size={16} />
 											</button>
 										</div>
 									))}
-									<span className="text-[var(--qbt-accent)] text-sm block mt-2">
-										Click or drop more files to add
-									</span>
 								</div>
-							) : (
-								<>
-									<p className="text-[var(--qbt-text-primary)] mb-2">
-										Drop torrent files here or click to browse
-									</p>
-									<p className="text-[var(--qbt-text-secondary)] text-sm">
-										Only .torrent files are supported
-									</p>
-								</>
 							)}
-						</button>
 
-						{/* Category Selection */}
-						<div>
-							<label
-								htmlFor={categoryInputId}
-								className="block text-sm font-medium text-[var(--qbt-text-primary)] mb-2"
-							>
-								Category (Optional)
-							</label>
-							<Combobox
-								value={selectedCategory}
-								onChange={(val) => setSelectedCategory(val ?? "")}
-								onClose={() => setQuery("")}
-							>
-								<div className="relative">
-									<ComboboxInput
-										id={categoryInputId}
-										displayValue={(val: string) => val}
-										onChange={(e) => setQuery(e.target.value)}
-										onClick={() => {
-											if (
-												!("open" in (comboButtonRef.current?.dataset ?? {}))
-											) {
-												comboButtonRef.current?.click();
-											}
-										}}
-										placeholder="No Category"
-										className="w-full px-3 py-2 pr-10 bg-[var(--qbt-bg-primary)] border border-[var(--qbt-border)] rounded text-[var(--qbt-text-primary)] placeholder:text-[var(--qbt-text-secondary)] focus:outline-none focus:border-[var(--qbt-accent)] transition-colors"
-									/>
-									<ComboboxButton
-										ref={comboButtonRef}
-										className="group absolute inset-y-0 right-0 flex items-center px-2"
-									>
-										<ChevronDown
-											size={20}
-											className="text-[var(--qbt-text-secondary)] transition-transform group-data-[open]:rotate-180"
+							{/* Category Selection */}
+							<div>
+								<label
+									htmlFor={categoryInputId}
+									className="block text-sm font-medium text-[var(--qbt-text-primary)] mb-2"
+								>
+									Category (Optional)
+								</label>
+								<Combobox
+									value={selectedCategory}
+									onChange={(val) => setSelectedCategory(val ?? "")}
+									onClose={() => setQuery("")}
+								>
+									<div className="relative">
+										<ComboboxInput
+											id={categoryInputId}
+											displayValue={(val: string) => val}
+											onChange={(e) => setQuery(e.target.value)}
+											onClick={() => {
+												if (
+													!("open" in (comboButtonRef.current?.dataset ?? {}))
+												) {
+													comboButtonRef.current?.click();
+												}
+											}}
+											placeholder="No Category"
+											className="w-full px-3 py-2 pr-10 bg-[var(--qbt-bg-primary)] border border-[var(--qbt-border)] rounded text-[var(--qbt-text-primary)] placeholder:text-[var(--qbt-text-secondary)] focus:outline-none focus:border-[var(--qbt-accent)] transition-colors"
 										/>
-									</ComboboxButton>
-									<ComboboxOptions
-										anchor="bottom start"
-										transition
-										className="z-50 w-[var(--input-width)] [--anchor-gap:4px] bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg shadow-xl max-h-64 overflow-y-auto empty:invisible transition duration-100 ease-in data-[leave]:opacity-0"
-									>
-										<ComboboxOption
-											value=""
-											className="group px-3 py-2 flex items-center justify-between cursor-pointer data-[focus]:bg-[var(--qbt-bg-tertiary)]"
+										<ComboboxButton
+											ref={comboButtonRef}
+											className="group absolute inset-y-0 right-0 flex items-center px-2"
 										>
-											<span className="text-[var(--qbt-text-secondary)]">
-												No Category
-											</span>
-											<Check
-												size={18}
-												className="text-[var(--qbt-accent)] invisible group-data-[selected]:visible"
+											<ChevronDown
+												size={20}
+												className="text-[var(--qbt-text-secondary)] transition-transform group-data-[open]:rotate-180"
 											/>
-										</ComboboxOption>
-										{filteredCategories.length > 0 ? (
-											filteredCategories.map((category) => (
-												<ComboboxOption
-													key={category.Name}
-													value={category.Name}
-													className="group px-3 py-2 flex items-center justify-between cursor-pointer data-[focus]:bg-[var(--qbt-bg-tertiary)]"
-												>
-													<span className="text-[var(--qbt-text-primary)]">
-														{category.Name}
-													</span>
-													<Check
-														size={18}
-														className="text-[var(--qbt-accent)] invisible group-data-[selected]:visible"
-													/>
-												</ComboboxOption>
-											))
-										) : (
-											<div className="px-3 py-4 text-center text-[var(--qbt-text-secondary)] text-sm">
-												No categories found
-											</div>
-										)}
-									</ComboboxOptions>
+										</ComboboxButton>
+										<ComboboxOptions
+											anchor="bottom start"
+											transition
+											className="z-50 w-[var(--input-width)] [--anchor-gap:4px] bg-[var(--qbt-bg-secondary)] border border-[var(--qbt-border)] rounded-lg shadow-xl max-h-64 overflow-y-auto empty:invisible transition duration-100 ease-in data-[leave]:opacity-0"
+										>
+											<ComboboxOption
+												value=""
+												className="group px-3 py-2 flex items-center justify-between cursor-pointer data-[focus]:bg-[var(--qbt-bg-tertiary)]"
+											>
+												<span className="text-[var(--qbt-text-secondary)]">
+													No Category
+												</span>
+												<Check
+													size={18}
+													className="text-[var(--qbt-accent)] invisible group-data-[selected]:visible"
+												/>
+											</ComboboxOption>
+											{filteredCategories.length > 0 ? (
+												filteredCategories.map((category) => (
+													<ComboboxOption
+														key={category.Name}
+														value={category.Name}
+														className="group px-3 py-2 flex items-center justify-between cursor-pointer data-[focus]:bg-[var(--qbt-bg-tertiary)]"
+													>
+														<span className="text-[var(--qbt-text-primary)]">
+															{category.Name}
+														</span>
+														<Check
+															size={18}
+															className="text-[var(--qbt-accent)] invisible group-data-[selected]:visible"
+														/>
+													</ComboboxOption>
+												))
+											) : (
+												<div className="px-3 py-4 text-center text-[var(--qbt-text-secondary)] text-sm">
+													No categories found
+												</div>
+											)}
+										</ComboboxOptions>
+									</div>
+								</Combobox>
+							</div>
+
+							{/* Error Message */}
+							{error && (
+								<div className="p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-sm">
+									{error}
 								</div>
-							</Combobox>
+							)}
 						</div>
 
-						{/* Error Message */}
-						{error && (
-							<div className="p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-sm">
-								{error}
-							</div>
-						)}
-
 						{/* Footer */}
-						<div className="flex justify-end gap-2 pt-2">
+						<div className="flex justify-end gap-2 p-4 border-t border-[var(--qbt-border)] flex-shrink-0">
 							<button
 								type="button"
 								onClick={onClose}
