@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/kong-yaml v0.2.0
 	github.com/jedib0t/go-pretty/v6 v6.8.3
 	github.com/labstack/echo/v5 v5.4.0
-	github.com/vektah/gqlparser/v2 v2.5.62
+	github.com/vektah/gqlparser/v2 v2.5.63
 )
 
 require (
