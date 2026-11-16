@@ -6,8 +6,8 @@ require (
 	github.com/99designs/gqlgen v0.17.98
 	github.com/alecthomas/kong v1.17.0
 	github.com/alecthomas/kong-yaml v0.2.0
-	github.com/jedib0t/go-pretty/v6 v6.8.3
-	github.com/labstack/echo/v5 v5.4.4
+	github.com/jedib0t/go-pretty/v6 v6.9.1
+	github.com/labstack/echo/v5 v5.4.5
 	github.com/vektah/gqlparser/v2 v2.5.64
 )
 
@@ -21,6 +21,7 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.31 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sosodev/duration v1.4.0 // indirect
 	github.com/urfave/cli/v3 v3.14.0 // indirect
 	golang.org/x/mod v0.42.0 // indirect
